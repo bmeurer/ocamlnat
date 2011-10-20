@@ -1,0 +1,6 @@
+(* OASIS_START *)
+(* DO NOT EDIT (digest: 7593759af92f1c7d2f84d4d4f051049c) *)
+Authors of ocamlnat
+Benedikt Meurer
+Marcell Fischbach
+(* OASIS_STOP *)

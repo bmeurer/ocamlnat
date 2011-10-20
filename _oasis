@@ -1,0 +1,148 @@
+OASISFormat: 0.2
+Name:        ocamlnat
+Version:     0.1.0+dev
+LicenseFile: LICENSE
+License:     LGPL with OCaml linking exception
+BuildType:   ocamlbuild (0.2)
+Authors:
+  Benedikt Meurer,
+  Marcell Fischbach
+Copyrights:
+  (c) 1996-2011 INRIA Rocquencourt,
+  (c) 2010-2011 Benedikt Meurer,
+  (c) 2011 University of Siegen
+Homepage:    https://github.com/bmeurer/ocamlnat/
+Plugins:     META (0.2), DevFiles (0.2), StdFiles (0.2)
+BuildTools:  make, ocamlbuild
+
+Synopsis:    A native toplevel for the OCaml language
+Description:
+  TODO
+
+Executable ocamlnat
+  Path: toplevel
+  MainIs: topstart.ml
+  CSources: natjit.c
+  BuildDepends: asmcomp, bytecomp, dynlink, parsing, typing, utils
+  CompiledObject: native
+
+Library utils
+  Path: utils
+  Modules:
+    Ccomp,
+    Clflags,
+    Config,
+    Consistbl,
+    Misc,
+    Tbl,
+    Terminfo,
+    Warnings
+  Install: false
+  CompiledObject: native
+
+Library parsing
+  Path: parsing
+  Modules:
+    Lexer,
+    Linenum,
+    Location,
+    Longident,
+    Parse,
+    Parser,
+    Printast,
+    Syntaxerr
+  Install: false
+  BuildDepends: utils
+  CompiledObject: native
+
+Library typing
+  Path: typing
+  Modules:
+    Btype,
+    Ctype,
+    Datarepr,
+    Env,
+    Ident,
+    Includeclass,
+    Includecore,
+    Includemod,
+    Mtype,
+    Oprint,
+    Parmatch,
+    Path,
+    Predef,
+    Primitive,
+    Printtyp,
+    Stypes,
+    Subst,
+    Typeclass,
+    Typecore,
+    Typedecl,
+    Typedtree,
+    Typemod,
+    Types,
+    Typetexp,
+    Unused_var
+  Install: false
+  BuildDepends: parsing
+  CompiledObject: native
+
+Library bytecomp
+  Path: bytecomp
+  Modules:
+    Lambda,
+    Matching,
+    Printlambda,
+    Runtimedef,
+    Simplif,
+    Switch,
+    Translclass,
+    Translcore,
+    Translmod,
+    Translobj,
+    Typeopt
+  Install: false
+  BuildDepends: typing
+  CompiledObject: native
+
+Library asmcomp
+  Path: asmcomp
+  Modules:
+    Arch,
+    Clambda,
+    Closure,
+    Cmm,
+    Cmmgen,
+    Coloring,
+    Comballoc,
+    Compilenv,
+    Debuginfo,
+    Emitaux,
+    Interf,
+    Jit,
+    Jitaux,
+    Linearize,
+    Liveness,
+    Mach,
+    Printcmm,
+    Printlinear,
+    Printmach,
+    Proc,
+    Reg,
+    Reload,
+    Reloadgen,
+    Schedgen,
+    Scheduling,
+    Selectgen,
+    Selection,
+    Spill,
+    Split
+  Install: false
+  BuildDepends: bytecomp
+  CompiledObject: native
+
+SourceRepository master
+  Type: git
+  Branch: master
+  Browser: https://github.com/bmeurer/ocamlnat
+  Location: git://github.com/bmeurer/ocamlnat.git
