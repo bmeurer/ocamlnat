@@ -34,12 +34,17 @@ let prepare ppf =
       false
 
 let file_argument name =
+  let ppf = Format.err_formatter in
   if Filename.check_suffix name ".cmxs"
   then preload_objects := name :: !preload_objects
   else
     begin
-      (*TODO*)
-      ()
+      let newargs = Array.sub Sys.argv !Arg.current
+                                       (Array.length Sys.argv - !Arg.current)
+      in
+      if prepare ppf && Toploop.run_script ppf name newargs
+      then exit 0
+      else exit 2
     end
 
 let print_version () = (* TODO *)
