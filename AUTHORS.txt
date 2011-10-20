@@ -1,6 +1,9 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 7593759af92f1c7d2f84d4d4f051049c) *)
+(* DO NOT EDIT (digest: f59f3bdd770be485bf9fe2ee785f6a21) *)
 Authors of ocamlnat
-Benedikt Meurer
-Marcell Fischbach
+Benedikt Meurer <benedikt.meurer@googlemail.com>
+Marcell Fischbach <marcellfischbach@googlemail.com>
+
+Current maintainers of ocamlnat
+Benedikt Meurer <benedikt.meurer@googlemail.com>
 (* OASIS_STOP *)
