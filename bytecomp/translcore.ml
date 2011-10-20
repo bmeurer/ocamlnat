@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id$ *)
+(* $Id: translcore.ml 10667 2010-09-02 13:29:21Z xclerc $ *)
 
 (* Translation from typed abstract syntax to lambda terms,
    for the core language *)
