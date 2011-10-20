@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: f27c2907f7a9cd506d06bca5cb80cd74) *)
+(* DO NOT EDIT (digest: 8b94f4a5dc6d31ceecfe17aefc24e828) *)
 This is the INSTALL file for the ocamlnat distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
@@ -11,7 +11,6 @@ Dependencies
 In order to compile this package, you will need:
 * ocaml
 * findlib
-* make
 
 Installing
 ==========
