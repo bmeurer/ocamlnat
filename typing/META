@@ -1,0 +1,10 @@
+# OASIS_START
+# DO NOT EDIT (digest: b22fe162edc6efcb7f1fa2aa63066fd0)
+version = "0.1.0+dev"
+description = "A native toplevel for the OCaml language"
+requires = "parsing"
+archive(byte) = "typing.cma"
+archive(native) = "typing.cmxa"
+exists_if = "typing.cmxa"
+# OASIS_STOP
+

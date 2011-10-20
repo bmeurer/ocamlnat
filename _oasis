@@ -24,13 +24,6 @@ Description: The native toplevel permits interactive use of OCaml system through
              and its runtime for compilation and code execution, which is up to \
              100 times faster than the byte code runtime.
 
-Executable ocamlnat
-  Path: toplevel
-  MainIs: topstart.ml
-  CSources: natjit.c
-  BuildDepends: asmcomp, bytecomp, dynlink, parsing, typing, utils
-  CompiledObject: native
-
 Library utils
   Path: utils
   Modules:
@@ -144,6 +137,13 @@ Library asmcomp
     Split
   Install: false
   BuildDepends: bytecomp
+  CompiledObject: native
+
+Executable ocamlnat
+  Path: toplevel
+  MainIs: topstart.ml
+  CSources: natjit.c
+  BuildDepends: asmcomp, bytecomp, dynlink, parsing, typing, utils
   CompiledObject: native
 
 SourceRepository master
