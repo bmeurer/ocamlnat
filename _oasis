@@ -7,6 +7,7 @@ BuildType:   ocamlbuild (0.2)
 Authors:
   Benedikt Meurer <benedikt.meurer@googlemail.com>,
   Marcell Fischbach <marcellfischbach@googlemail.com>
+Maintainers: Benedikt Meurer <benedikt.meurer@googlemail.com>
 Copyrights:
   (c) 1996-2011 INRIA Rocquencourt,
   (c) 2010-2011 Benedikt Meurer,
