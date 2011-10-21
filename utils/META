@@ -1,9 +1,0 @@
-# OASIS_START
-# DO NOT EDIT (digest: a6f8e085d9f764405995b28b6183b6ef)
-version = "0.1.0+dev"
-description = "A native toplevel for the OCaml language"
-archive(byte) = "utils.cma"
-archive(native) = "utils.cmxa"
-exists_if = "utils.cmxa"
-# OASIS_STOP
-

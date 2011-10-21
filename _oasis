@@ -13,7 +13,7 @@ Copyrights:
   (c) 2010-2011 Benedikt Meurer,
   (c) 2011 University of Siegen
 Homepage:    https://github.com/bmeurer/ocamlnat/
-Plugins:     META (0.2), DevFiles (0.2), StdFiles (0.2)
+Plugins:     DevFiles (0.2), StdFiles (0.2)
 BuildTools:  ocamlbuild
 
 Synopsis:    A native toplevel for the OCaml language
