@@ -2,7 +2,7 @@ OASISFormat: 0.2
 Name:        ocamlnat
 Version:     0.1.0+dev
 LicenseFile: LICENSE
-License:     LGPL with OCaml linking exception
+License:     QPL
 BuildType:   ocamlbuild (0.2)
 Authors:
   Benedikt Meurer <benedikt.meurer@googlemail.com>,
