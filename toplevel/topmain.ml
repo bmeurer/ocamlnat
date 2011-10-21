@@ -47,8 +47,8 @@ let file_argument name =
       else exit 2
     end
 
-let print_version () = (* TODO *)
-  Printf.printf "The OCaml native toplevel, version %s\n" Sys.ocaml_version;
+let print_version () =
+  Printf.printf "The OCaml native toplevel, version %s\n" Version.version;
   exit 0
 
 module Options = struct

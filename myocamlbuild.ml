@@ -520,7 +520,22 @@ rule "The configuration file"
           A"-e"; subst "MKDLL" "";
           A"-e"; subst "MKEXE" "";
           A"-e"; subst "MKMAINDLL" "";
-          Sh"<"; P"utils/config.mlp"; Sh">"; Px"utils/config.ml"])
+          Sh"<"; P"utils/config.mlp";
+          Sh">"; Px"utils/config.ml"])
+  end;;
+
+(* The version file *)
+rule "The version file"
+  ~prod:"toplevel/version.ml"
+  ~dep:"toplevel/version.mlp"
+  ~insert:`top
+  begin fun _ _ ->
+    let subst v x = A(Printf.sprintf "s|%%%%%s%%%%|%s|" v x) in
+    let subst_var v n = subst v (BaseEnvLight.var_get n env) in
+    Cmd(S[A"sed";
+          A"-e"; subst_var "VERSION" "pkg_version";
+          Sh"<"; P"toplevel/version.mlp";
+          Sh">"; Px"toplevel/version.ml"])
   end;;
 
 (* Choose the right machine-dependent files *)

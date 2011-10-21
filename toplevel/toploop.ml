@@ -395,8 +395,9 @@ let initialize_toplevel_env () =
 
 exception PPerror
 
-let loop ppf = (* TODO *)
-  fprintf ppf "        OCaml version %s - ocamlnat version %s@.@." Config.version "TODO";
+let loop ppf =
+  fprintf ppf "        ocamlnat version %s (OCaml version %s)@.@."
+    Version.version Sys.ocaml_version;
   initialize_toplevel_env ();
   let lb = Lexing.from_function refill_lexbuf in
   Location.input_name := "";
