@@ -1,43 +1,10 @@
+<{asmcomp,bytecomp,parsing,typing,utils}>: include
+"toplevel/topstart.native": linkall
 # OASIS_START
-# DO NOT EDIT (digest: d6f1c88d77e615b7909eee93706f340b)
-# Library utils
-"utils": include
-# Library parsing
-"parsing": include
-<parsing/*.ml{,i}>: use_utils
-# Library typing
-"typing": include
-<typing/*.ml{,i}>: use_parsing
-<typing/*.ml{,i}>: use_utils
-# Library bytecomp
-"bytecomp": include
-<bytecomp/*.ml{,i}>: use_typing
-<bytecomp/*.ml{,i}>: use_parsing
-<bytecomp/*.ml{,i}>: use_utils
-# Library asmcomp
-"asmcomp": include
-<asmcomp/*.ml{,i}>: use_bytecomp
-<asmcomp/*.ml{,i}>: use_typing
-<asmcomp/*.ml{,i}>: use_parsing
-<asmcomp/*.ml{,i}>: use_utils
+# DO NOT EDIT (digest: f66402a2cf359f6b1af1e23ce7bf2619)
 # Executable ocamlnat
 "toplevel/topstart.native": use_libocamlnat
-"toplevel/topstart.native": use_asmcomp
-"toplevel/topstart.native": use_bytecomp
-"toplevel/topstart.native": use_typing
-"toplevel/topstart.native": use_parsing
-"toplevel/topstart.native": use_utils
 "toplevel/topstart.native": pkg_dynlink
-<toplevel/*.ml{,i}>: use_asmcomp
-<toplevel/*.ml{,i}>: use_bytecomp
-<toplevel/*.ml{,i}>: use_typing
-<toplevel/*.ml{,i}>: use_parsing
-<toplevel/*.ml{,i}>: use_utils
 <toplevel/*.ml{,i}>: pkg_dynlink
-"toplevel/natjit.c": use_asmcomp
-"toplevel/natjit.c": use_bytecomp
-"toplevel/natjit.c": use_typing
-"toplevel/natjit.c": use_parsing
-"toplevel/natjit.c": use_utils
 "toplevel/natjit.c": pkg_dynlink
 # OASIS_STOP

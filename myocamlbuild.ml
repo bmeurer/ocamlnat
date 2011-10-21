@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: c84ab8f57b5ced586e882dba62d40a67) *)
+(* DO NOT EDIT (digest: 98a87aba7cea6dabc609dd2d47c15992) *)
 module OASISGettext = struct
 # 21 "/opt/local/var/macports/build/_Users_bmeurer_Desktop_Projects_MacPorts_ports_devel_caml-oasis/caml-oasis/work/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -451,14 +451,7 @@ end
 open Ocamlbuild_plugin;;
 let package_default =
   {
-     MyOCamlbuildBase.lib_ocaml =
-       [
-          ("utils/utils", ["utils"]);
-          ("parsing/parsing", ["parsing"]);
-          ("typing/typing", ["typing"]);
-          ("bytecomp/bytecomp", ["bytecomp"]);
-          ("asmcomp/asmcomp", ["asmcomp"])
-       ];
+     MyOCamlbuildBase.lib_ocaml = [];
      lib_c = [("ocamlnat", "toplevel", [])];
      flags = [];
      }
