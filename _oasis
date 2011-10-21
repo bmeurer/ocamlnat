@@ -26,6 +26,10 @@ Description:
   and its runtime for compilation and code execution, which is up to
   100 times faster than the byte code runtime.
 
+XStdFilesAUTHORSFileName: AUTHORS
+XStdFilesINSTALLFileName: INSTALL
+XStdFilesREADMEFileName:  README
+
 Library utils
   Path: utils
   Modules:
