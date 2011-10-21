@@ -1,9 +1,10 @@
-OASISFormat: 0.2
-Name:        ocamlnat
-Version:     0.1.0+dev
-LicenseFile: LICENSE
-License:     QPL
-BuildType:   ocamlbuild (0.2)
+OASISFormat:  0.2
+Name:         ocamlnat
+Version:      0.1.0+dev
+OCamlVersion: >= 3.12.1
+LicenseFile:  LICENSE
+License:      QPL
+BuildType:    ocamlbuild (0.2)
 Authors:
   Benedikt Meurer <benedikt.meurer@googlemail.com>,
   Marcell Fischbach <marcellfischbach@googlemail.com>
@@ -12,11 +13,11 @@ Copyrights:
   (c) 1996-2011 INRIA Rocquencourt,
   (c) 2010-2011 Benedikt Meurer,
   (c) 2011 University of Siegen
-Homepage:    https://github.com/bmeurer/ocamlnat/
-Plugins:     DevFiles (0.2), StdFiles (0.2)
-BuildTools:  ocamlbuild
+Homepage:     https://github.com/bmeurer/ocamlnat/
+Plugins:      DevFiles (0.2), StdFiles (0.2)
+BuildTools:   ocamlbuild
 
-Synopsis:    A native toplevel for the OCaml language
+Synopsis:     A native toplevel for the OCaml language
 Description:
   The native toplevel permits interactive use of OCaml system through
   a read-eval-print loop, similar to the standard OCaml toplevel that
