@@ -540,25 +540,30 @@ rule "The version file"
 
 (* Choose the right machine-dependent files *)
 
-let mk_arch_rule ~src ~dst =
-  let prod = "asmcomp"/dst in
-  let dep = "asmcomp"/arch/src in
+let mk_arch_rule ~dir ~src ~dst =
+  let prod = dir/dst in
+  let dep = dir/arch/src in
   rule (sf "arch specific files %S%%" dst) ~prod ~dep begin
     if windows then fun env _ -> cp (env dep) (env prod)
     else fun env _ -> ln_s (env (arch/src)) (env prod)
   end;;
 
 mk_arch_rule
+  ~dir:"asmcomp"
   ~src:(if ccomptype = "msvc" then "proc_nt.ml" else "proc.ml")
   ~dst:"proc.ml";;
 
 List.iter
-  (fun x -> mk_arch_rule ~src:x ~dst:x)
+  (fun x -> mk_arch_rule ~dir:"asmcomp" ~src:x ~dst:x)
   ["arch.ml";
-   "jit.ml";
    "reload.ml";
    "scheduling.ml";
    "selection.ml"];;
+
+mk_arch_rule
+  ~dir:"toplevel"
+  ~src:"jit.ml"
+  ~dst:"jit.ml";;
 
           end in ()
       | _ ->
