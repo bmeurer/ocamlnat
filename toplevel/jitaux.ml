@@ -18,14 +18,6 @@ open Cmm
 open Emitaux
 open Linearize
 
-module Addr = 
-struct
-  include Nativeint
-
-  let of_int64 = Int64.to_nativeint
-  let to_int64 = Int64.of_nativeint
-end
-
 external ndl_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
 external ndl_getsym: string -> Addr.t = "camlnat_jit_getsym"
 
@@ -78,13 +70,13 @@ let symbols = ref ([] : (string * (section * int)) list)
 
 let addr_of_label lbl =
   let (sec, ofs) = List.assoc lbl !labels in
-  Addr.add sec.sec_addr (Addr.of_int ofs)
+  Addr.add_int sec.sec_addr ofs
 
 let addr_of_symbol sym =
   try
     (* Try or own symbols first *)
     let (sec, ofs) = List.assoc sym !symbols in
-    Addr.add sec.sec_addr (Addr.of_int ofs)
+    Addr.add_int sec.sec_addr ofs
   with
     Not_found ->
       (* Fallback to the global symbol table *)
@@ -153,7 +145,7 @@ let patch_reloc (sec, ofs, rel) =
       nj_putint64 sec.sec_buf ofs x
   | RelocRel32 tag ->
       let t = addr_of_tag tag in
-      let r = Addr.add sec.sec_addr (Addr.of_int ofs) in
+      let r = Addr.add_int sec.sec_addr ofs in
       let d = Addr.of_int32 (nj_getint32 sec.sec_buf ofs) in
       let x = Addr.add (Addr.sub t r) d in
       nj_putint32 sec.sec_buf ofs (Addr.to_int32 x)
