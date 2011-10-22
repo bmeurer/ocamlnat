@@ -12,7 +12,7 @@
 
 (* $Id$ *)
 
-(* The toplevel directives. *)
+(* The toplevel directives *)
 
 open Format
 open Misc
