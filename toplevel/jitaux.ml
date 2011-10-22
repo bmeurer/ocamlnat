@@ -18,8 +18,8 @@ open Cmm
 open Emitaux
 open Linearize
 
-external ndl_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
-external ndl_getsym: string -> Addr.t = "camlnat_jit_getsym"
+external nj_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
+external nj_getsym: string -> Addr.t = "camlnat_jit_getsym"
 
 external nj_getint16: string -> int -> int = "camlnat_jit_getint16" "noalloc"
 external nj_getint32: string -> int -> int32 = "camlnat_jit_getint32"
@@ -80,7 +80,7 @@ let addr_of_symbol sym =
   with
     Not_found ->
       (* Fallback to the global symbol table *)
-      ndl_getsym sym
+      nj_getsym sym
 
 let symbol_name sym =
   let buf = Buffer.create (String.length sym) in
@@ -330,5 +330,5 @@ let end_assembly() =
   nj_memcpy data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
   (* Register global symbols *)
   List.iter
-    (fun sym -> ndl_addsym sym (addr_of_symbol sym))
+    (fun sym -> nj_addsym sym (addr_of_symbol sym))
     !globals
