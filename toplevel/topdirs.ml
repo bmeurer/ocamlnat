@@ -61,15 +61,21 @@ let load_file ppf name0 =
       fprintf ppf "File not found: %s@." name0;
       false
   | Some name ->
-      try Dynlink.loadfile name; true
-      with
-        Dynlink.Error err ->
-          fprintf ppf "Error while loading %s: %s.@."
-            name (Dynlink.error_message err);
-          false
-      | exn ->
-          print_exception_outcome ppf exn;
-          false
+      if Filename.check_suffix name ".cmxs" then
+        begin try Dynlink.loadfile name; true
+        with
+          Dynlink.Error err ->
+            fprintf ppf "Error while loading %s: %s.@."
+              name (Dynlink.error_message err);
+            false
+        | exn ->
+            print_exception_outcome ppf exn;
+            false
+        end
+      else begin
+        fprintf ppf "Error while loading %s: %s.@."
+          name "Not a cmxs file"; false
+      end
 
 let dir_load ppf name = ignore (load_file ppf name)
 
