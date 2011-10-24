@@ -540,6 +540,18 @@ rule "The version file"
 
 (* Choose the right machine-dependent files *)
 
+let emit_mlp = "asmcomp"/arch/(if ccomptype = "msvc"
+                               then "emit_nt.mlp"
+                               else "emit.mlp") in
+rule (sf "arch specific file %S%%" emit_mlp)
+  ~prod:"asmcomp/emit.ml"
+  ~deps:[emit_mlp; "tools/cvt_emit.native"]
+  begin fun _ _ ->
+    Cmd(S[Px"tools/cvt_emit.native";
+          Sh"<"; P(emit_mlp);
+          Sh">"; Px"asmcomp/emit.ml"])
+  end;;
+
 let mk_arch_rule ~dir ~src ~dst =
   let prod = dir/dst in
   let dep = dir/arch/src in
