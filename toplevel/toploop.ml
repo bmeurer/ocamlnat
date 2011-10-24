@@ -136,7 +136,7 @@ let load_lambda ppf (size, lam) =
   if !Clflags.dump_rawlambda then fprintf ppf "%a@." Printlambda.lambda lam;
   let slam = Simplif.simplify_lambda lam in
   if !Clflags.dump_lambda then fprintf ppf "%a@." Printlambda.lambda slam;
-  Asmgen.compile ~toplevel:need_symbol ppf (size, lam);
+  Jitgen.compile ~toplevel:need_symbol ppf (size, lam);
   run !phrase_name
 
 (* Print the outcome of an evaluation *)
