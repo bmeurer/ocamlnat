@@ -64,7 +64,8 @@ let load_file ppf name0 =
       (* Need to generate a temporary .cmxs file first *)
       let temp = (Filename.basename (Filename.chop_extension name0)) in
       let cmxs = Filename.temp_file temp ".cmxs" in
-      let cmd = Printf.sprintf "ocamlopt -linkall -shared -o %s %s"
+      let cmd = Printf.sprintf "%s -linkall -shared -o %s %s"
+                  (Filename.quote Config.standard_ocamlopt)
                   (Filename.quote cmxs)
                   (Filename.quote name) in
       if Ccomp.command cmd != 0 then begin

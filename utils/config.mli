@@ -31,6 +31,8 @@ val version: string
 
 val standard_library: string
         (* The directory containing the standard libraries *)
+val standard_ocamlopt: string
+        (* The full path to the standard native code compiler ocamlopt *)
 val standard_runtime: string
         (* The full path to the standard bytecode interpreter ocamlrun *)
 val ccomp_type: string

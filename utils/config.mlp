@@ -37,6 +37,7 @@ let standard_library =
   with Not_found ->
     standard_library_default
 
+let standard_ocamlopt = "%%OCAMLOPT%%"
 let standard_runtime = "%%BYTERUN%%"
 let ccomp_type = "%%CCOMPTYPE%%"
 let bytecomp_c_compiler = "%%BYTECC%%"

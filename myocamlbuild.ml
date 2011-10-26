@@ -500,6 +500,7 @@ rule "The configuration file"
     Cmd(S[A"sed";
           A"-e"; subst_var "VERSION" "pkg_version";
           A"-e"; subst_var "LIBDIR" "standard_library_default";
+          A"-e"; subst_var "OCAMLOPT" "ocamlopt";
           A"-e"; subst_var "BYTERUN" "standard_runtime";
           A"-e"; subst "CCOMPTYPE" ccomptype;
           A"-e"; subst_var "BYTECC" "bytecomp_c_compiler";
