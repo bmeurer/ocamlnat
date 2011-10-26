@@ -53,29 +53,45 @@ let _ = Hashtbl.add directive_table "cd" (Directive_string dir_cd)
 (* Load in-core a .cmxs file *)
 
 let load_file ppf name0 =
-  let name = 
-    try Some (find_in_path !Config.load_path name0)
-    with Not_found -> None in
-  match name with
-    None ->
-      fprintf ppf "File not found: %s@." name0;
-      false
-  | Some name ->
-      if Filename.check_suffix name ".cmxs" then
-        begin try Dynlink.loadfile name; true
-        with
-          Dynlink.Error err ->
-            fprintf ppf "Error while loading %s: %s.@."
-              name (Dynlink.error_message err);
-            false
-        | exn ->
-            print_exception_outcome ppf exn;
-            false
-        end
-      else begin
-        fprintf ppf "Error while loading %s: %s.@."
-          name "Not a cmxs file"; false
+  begin try
+    let name = (try find_in_path !Config.load_path name0
+                with Not_found ->
+                  raise (Dynlink.Error(Dynlink.File_not_found name0))) in
+    if Filename.check_suffix name ".cmxs" then begin
+      (* .cmxs files can be loaded directly *)
+      Dynlink.loadfile name
+    end else if Filename.check_suffix name ".cmxa" then begin
+      (* Need to generate a temporary .cmxs file first *)
+      let temp = (Filename.basename (Filename.chop_extension name0)) in
+      let cmxs = Filename.temp_file temp ".cmxs" in
+      let cmd = Printf.sprintf "ocamlopt -linkall -shared -o %s %s"
+                  (Filename.quote cmxs)
+                  (Filename.quote name) in
+      if Ccomp.command cmd != 0 then begin
+        let reason = "Failed to generate temporary cmxs file" in
+        raise (Dynlink.Error(Dynlink.Cannot_open_dll reason))
+      end;
+      begin try
+        Dynlink.loadfile cmxs;
+        begin try Sys.remove cmxs with Sys_error _ -> () end
+      with exn ->
+        begin try Sys.remove cmxs with Sys_error _ -> () end;
+        raise exn
       end
+    end else begin
+      let reason = "Unsupported file: " ^ name in
+      raise (Dynlink.Error(Dynlink.Cannot_open_dll reason))
+    end;
+    true
+  with
+    Dynlink.Error error ->
+      fprintf ppf "Error while loading %s: %s.@."
+        name0 (Dynlink.error_message error);
+      false
+  | exn ->
+      print_exception_outcome ppf exn;
+      false
+  end
 
 let dir_load ppf name = ignore (load_file ppf name)
 
