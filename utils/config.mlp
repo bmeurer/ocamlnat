@@ -1,5 +1,17 @@
 (***********************************************************************)
 (*                                                                     *)
+(*                              ocamlnat                               *)
+(*                                                                     *)
+(*                  Benedikt Meurer, University of Siegen              *)
+(*                                                                     *)
+(*    Copyright 2011 Lehrstuhl für Compilerbau und Softwareanalyse,    *)
+(*    Universität Siegen. All rights reserved. This file is distri-    *)
+(*    buted under the terms of the Q Public License version 1.0.       *)
+(*                                                                     *)
+(***********************************************************************)
+
+(***********************************************************************)
+(*                                                                     *)
 (*                           Objective Caml                            *)
 (*                                                                     *)
 (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
@@ -12,7 +24,7 @@
 
 (* $Id: config.mlp 10424 2010-05-19 11:29:38Z xleroy $ *)
 
-let version = Sys.ocaml_version
+let version = "%%VERSION%%"
 
 let standard_library_default = "%%LIBDIR%%"
 

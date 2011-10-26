@@ -397,7 +397,7 @@ exception PPerror
 
 let loop ppf =
   fprintf ppf "        ocamlnat version %s (OCaml version %s)@.@."
-    Version.version Sys.ocaml_version;
+    Config.version Sys.ocaml_version;
   initialize_toplevel_env ();
   let lb = Lexing.from_function refill_lexbuf in
   Location.input_name := "";
