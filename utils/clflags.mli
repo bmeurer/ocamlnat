@@ -1,5 +1,17 @@
 (***********************************************************************)
 (*                                                                     *)
+(*                              ocamlnat                               *)
+(*                                                                     *)
+(*                  Benedikt Meurer, University of Siegen              *)
+(*                                                                     *)
+(*    Copyright 2011 Lehrstuhl für Compilerbau und Softwareanalyse,    *)
+(*    Universität Siegen. All rights reserved. This file is distri-    *)
+(*    buted under the terms of the Q Public License version 1.0.       *)
+(*                                                                     *)
+(***********************************************************************)
+
+(***********************************************************************)
+(*                                                                     *)
 (*                           Objective Caml                            *)
 (*                                                                     *)
 (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
@@ -56,6 +68,7 @@ val dump_lambda : bool ref
 val dump_instr : bool ref
 val keep_asm_file : bool ref
 val optimize_for_speed : bool ref
+val linscan : bool ref
 val dump_cmm : bool ref
 val dump_selection : bool ref
 val dump_live : bool ref
@@ -63,6 +76,7 @@ val dump_spill : bool ref
 val dump_split : bool ref
 val dump_interf : bool ref
 val dump_prefer : bool ref
+val dump_interval : bool ref
 val dump_regalloc : bool ref
 val dump_reload : bool ref
 val dump_scheduling : bool ref

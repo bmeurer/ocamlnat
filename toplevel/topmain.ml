@@ -82,6 +82,9 @@ module Options = struct
     "-nolabels",
       Arg.Set classic,
       " Ignore non-optional labels in types";
+    "-nolinscan",
+      Arg.Clear linscan,
+      " Use the graph coloring register allocator";
     "-noprompt",
       Arg.Set noprompt,
       " Suppress all prompts";
@@ -138,6 +141,7 @@ module Options = struct
     "-dsplit", Arg.Set dump_split, " (undocumented)";
     "-dinterf", Arg.Set dump_interf, " (undocumented)";
     "-dprefer", Arg.Set dump_prefer, " (undocumented)";
+    "-dinterval", Arg.Set dump_interval, " (undocumented)";
     "-dalloc", Arg.Set dump_regalloc, " (undocumented)";
     "-dreload", Arg.Set dump_reload, " (undocumented)";
     "-dscheduling", Arg.Set dump_scheduling, " (undocumented)";
