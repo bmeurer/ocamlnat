@@ -10,6 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
+(* System configuration *)
+
 let version = "$pkg_version"
 
 let standard_library_default = "$standard_library_default"

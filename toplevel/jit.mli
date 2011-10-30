@@ -10,8 +10,6 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id$ *)
-
 (* JIT emission of x86-64 (AMD 64) assembly code *)
 
 val fundecl: Linearize.fundecl -> unit
