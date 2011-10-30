@@ -51,6 +51,7 @@ let test_std_dir ?(options = []) dirname =
 let suite =
   "ocamlnat" >:::
   [
+    test_std_dir "basic";
     test_std_dir "misc";
     test_std_dir ~options:["-unsafe"] "misc-unsafe";
   ]
