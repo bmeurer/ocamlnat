@@ -10,20 +10,6 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(***********************************************************************)
-(*                                                                     *)
-(*                           Objective Caml                            *)
-(*                                                                     *)
-(*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
-(*                                                                     *)
-(*  Copyright 1996 Institut National de Recherche en Informatique et   *)
-(*  en Automatique.  All rights reserved.  This file is distributed    *)
-(*  under the terms of the Q Public License version 1.0.               *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: config.mli 10424 2010-05-19 11:29:38Z xleroy $ *)
-
 (* System configuration *)
 
 val version: string
@@ -33,36 +19,6 @@ val standard_library: string
         (* The directory containing the standard libraries *)
 val standard_ocamlopt: string
         (* The full path to the standard native code compiler ocamlopt *)
-val standard_runtime: string
-        (* The full path to the standard bytecode interpreter ocamlrun *)
-val ccomp_type: string
-        (* The "kind" of the C compiler: one of
-               "cc" (for Unix-style C compilers)
-               "msvc" (Microsoft Visual C++)
-               "mrc" (Macintosh MPW) *)
-val bytecomp_c_compiler: string
-        (* The C compiler to use for compiling C files
-           with the bytecode compiler *)
-val bytecomp_c_libraries: string
-        (* The C libraries to link with custom runtimes *)
-val native_c_compiler: string
-        (* The C compiler to use for compiling C files
-           with the native-code compiler *)
-val native_c_libraries: string
-        (* The C libraries to link with native-code programs *)
-val native_pack_linker: string
-        (* The linker to use for packaging (ocamlopt -pack) and for partial links
-           (ocamlopt -output-obj). *)
-val mkdll: string
-        (* The linker command line to build dynamic libraries. *)
-val mkexe: string
-        (* The linker command line to build executables. *)
-val mkmaindll: string
-        (* The linker command line to build main programs as dlls. *)
-val ranlib: string
-        (* Command to randomize a library, or "" if not needed *)
-val cc_profile : string
-        (* The command line option to the C compiler to enable profiling. *)
 
 val load_path: string list ref
         (* Directories in the search path for .cmi and .cmo files *)
