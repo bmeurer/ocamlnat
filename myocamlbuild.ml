@@ -1,3 +1,15 @@
+(***********************************************************************)
+(*                                                                     *)
+(*                              ocamlnat                               *)
+(*                                                                     *)
+(*                  Benedikt Meurer, University of Siegen              *)
+(*                                                                     *)
+(*    Copyright 2011 Lehrstuhl für Compilerbau und Softwareanalyse,    *)
+(*    Universität Siegen. All rights reserved. This file is distri-    *)
+(*    buted under the terms of the Q Public License version 1.0.       *)
+(*                                                                     *)
+(***********************************************************************)
+
 (* OASIS_START *)
 (* DO NOT EDIT (digest: 98a87aba7cea6dabc609dd2d47c15992) *)
 module OASISGettext = struct
@@ -488,43 +500,6 @@ flag ["compile"; "c"]
   (S[A"-ccopt"; A("-DOS_" ^ os_type);
      A"-ccopt"; A("-DSYS_" ^ system);
      A"-ccopt"; A("-DTARGET_" ^ arch)]);;
-
-(* The configuration file *)
-rule "The configuration file"
-  ~prod:"utils/config.ml"
-  ~dep:"utils/config.mlp"
-  ~insert:`top
-  begin fun _ _ ->
-    let subst v x = A(Printf.sprintf "s|%%%%%s%%%%|%s|" v x) in
-    let subst_var v n = subst v (BaseEnvLight.var_get n env) in
-    Cmd(S[A"sed";
-          A"-e"; subst_var "VERSION" "pkg_version";
-          A"-e"; subst_var "LIBDIR" "standard_library_default";
-          A"-e"; subst_var "OCAMLOPT" "ocamlopt";
-          A"-e"; subst_var "BYTERUN" "standard_runtime";
-          A"-e"; subst "CCOMPTYPE" ccomptype;
-          A"-e"; subst_var "BYTECC" "bytecomp_c_compiler";
-          A"-e"; subst_var "NATIVECC" "native_c_compiler";
-          A"-e"; subst "PACKLD" "";
-          A"-e"; subst "BYTECCLIBS" "";
-          A"-e"; subst "NATIVECCLIBS" "";
-          A"-e"; subst "RANLIBCMD" "";
-          A"-e"; subst "CC_PROFILE" "";
-          A"-e"; subst "ARCH" arch;
-          A"-e"; subst_var "MODEL" "model";
-          A"-e"; subst "SYSTEM" system;
-          A"-e"; subst_var "EXT_OBJ" "ext_obj";
-          A"-e"; subst_var "EXT_ASM" "ext_asm";
-          A"-e"; subst_var "EXT_LIB" "ext_lib";
-          A"-e"; subst_var "EXT_DLL" "ext_dll";
-          A"-e"; subst_var "SYSTHREAD_SUPPORT" "systhread_supported";
-          A"-e"; subst "ASM" "";
-          A"-e"; subst "MKDLL" "";
-          A"-e"; subst "MKEXE" "";
-          A"-e"; subst "MKMAINDLL" "";
-          Sh"<"; P"utils/config.mlp";
-          Sh">"; Px"utils/config.ml"])
-  end;;
 
 (* Choose the right machine-dependent files *)
 

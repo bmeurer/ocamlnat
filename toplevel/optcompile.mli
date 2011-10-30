@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id$ *)
+(* The batch compiler *)
 
 val initial_env: unit -> Env.t
 val init_path: unit -> unit

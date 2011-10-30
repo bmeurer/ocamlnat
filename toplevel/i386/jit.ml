@@ -11,8 +11,6 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id$ *)
-
 (* JIT emission of Intel 386 assembly code *)
 
 module StringSet = Set.Make(struct type t = string let compare = compare end)

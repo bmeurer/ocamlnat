@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 53249e498d0d00e4ee33975c2e5c553e) *)
+(* DO NOT EDIT (digest: 1424a266b42c38fb9c844567d198e4e3) *)
 This is the README file for the ocamlnat distribution.
 
 (c) 1996-2011 INRIA Rocquencourt
@@ -20,7 +20,7 @@ code execution, which is up to 100 times faster than the byte code runtime.
 See the files INSTALL for building and installation instructions. See the
 file LICENSE for copying conditions. 
 
-Home page: https://github.com/bmeurer/ocamlnat/
+Home page: https://github.com/bmeurer/ocamlnat
 
 
 (* OASIS_STOP *)

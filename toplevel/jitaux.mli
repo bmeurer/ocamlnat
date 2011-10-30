@@ -10,8 +10,6 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id$ *)
-
 (* Common functions for jitting code *)
 
 val jit_text: unit -> unit
