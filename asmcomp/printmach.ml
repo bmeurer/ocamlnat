@@ -18,6 +18,7 @@ open Format
 open Cmm
 open Reg
 open Mach
+open Interval
 
 let reg ppf r =
   if String.length r.name > 0 then
@@ -206,6 +207,18 @@ let interference ppf r =
 let interferences ppf () =
   fprintf ppf "*** Interferences@.";
   List.iter (interference ppf) (Reg.all_registers())
+
+let interval ppf i =
+  let interv ppf =
+    List.iter
+      (fun r -> fprintf ppf "@ [%d;%d]" r.rbegin r.rend)
+      i.ranges in
+  fprintf ppf "@[<2>%a:%t@]@." reg i.reg interv
+
+let intervals ppf () =
+  fprintf ppf "*** Intervals@.";
+  List.iter (interval ppf) (Interval.all_fixed_intervals());
+  List.iter (interval ppf) (Interval.all_intervals())
 
 let preference ppf r =
   let prefs ppf =
