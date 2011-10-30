@@ -11,8 +11,6 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id$ *)
-
 (* Linear scan register allocation. *)
 
 val allocate_registers: unit -> unit
