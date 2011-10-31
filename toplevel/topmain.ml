@@ -54,6 +54,10 @@ let regalloc_argument name =
       Format.fprintf ppf "Unsupported register allocator: %s\n" name;
       exit 2
 
+let print_config () =
+  Config.print_config stdout;
+  exit 0
+
 let print_version () =
   Printf.printf "The OCaml native toplevel, version %s\n" Config.version;
   exit 0
@@ -64,6 +68,9 @@ module Options = struct
     "-compact",
       Arg.Clear optimize_for_speed,
       " Optimize code size rather than speed";
+    "-config",
+      Arg.Unit print_config,
+      " Print configuration values and exit";
     "-I",
       Arg.String (fun dir ->
                     let dir = Misc.expand_directory
