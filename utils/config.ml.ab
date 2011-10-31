@@ -61,6 +61,8 @@ let ext_asm = "$ext_asm"
 let ext_lib = "$ext_lib"
 let ext_dll = "$ext_dll"
 
+let default_register_allocator = "ls"
+
 let default_executable_name =
   match Sys.os_type with
     "Unix" -> "a.out"
@@ -83,6 +85,7 @@ let print_config oc =
   p "ext_lib" ext_lib;
   p "ext_dll" ext_dll;
   p "os_type" Sys.os_type;
+  p "default_register_allocator" default_register_allocator;
   p_bool "systhread_supported" systhread_supported;
   flush oc;
 ;;

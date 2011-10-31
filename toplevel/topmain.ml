@@ -45,6 +45,15 @@ let file_argument name =
       else exit 2
     end
 
+let regalloc_argument name =
+  let ppf = Format.err_formatter in
+  match name with
+    "gc" | "ls" as name ->
+      Clflags.register_allocator := name
+  | name ->
+      Format.fprintf ppf "Unsupported register allocator: %s\n" name;
+      exit 2
+
 let print_config () =
   Config.print_config stdout;
   exit 0
@@ -99,6 +108,13 @@ module Options = struct
     "-rectypes",
       Arg.Set recursive_types,
       " Allow arbitrary recursive types";
+    "-regalloc",
+      Arg.String regalloc_argument,
+      Printf.sprintf
+      "<name>  Use register allocator <name>:\n\
+      \        gc   Use the graph coloring register allocator.\n\
+      \        ls   Use the linear scan register allocator.\n\
+      \     Default setting is %S." Config.default_register_allocator;
     "-strict-sequence",
       Arg.Set strict_sequence,
       " Left-hand part of a sequence must have type unit";
@@ -143,6 +159,7 @@ module Options = struct
     "-dsplit", Arg.Set dump_split, " (undocumented)";
     "-dinterf", Arg.Set dump_interf, " (undocumented)";
     "-dprefer", Arg.Set dump_prefer, " (undocumented)";
+    "-dinterval", Arg.Set dump_interval, " (undocumented)";
     "-dalloc", Arg.Set dump_regalloc, " (undocumented)";
     "-dreload", Arg.Set dump_reload, " (undocumented)";
     "-dscheduling", Arg.Set dump_scheduling, " (undocumented)";
