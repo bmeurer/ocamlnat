@@ -27,7 +27,7 @@ let readfile fn =
     raise exn
   end
 
-let test_std ?(options = []) dirname filename =
+let test_basic ?(options = []) dirname filename =
   filename >:: begin fun () ->
     let path = Filename.concat dirname filename in
     let reference = readfile (path ^ ".reference") in
@@ -40,20 +40,24 @@ let test_std ?(options = []) dirname filename =
     assert_equal result reference
   end
 
-let test_std_dir ?(options = []) dirname =
+let suite_basic dirname =
+  let tests = List.map
+                (fun fn -> Filename.chop_suffix fn ".reference")
+                  (List.filter
+                    (fun fn -> Filename.check_suffix fn ".reference")
+                    (Array.to_list (Sys.readdir dirname))) in
   dirname >:::
-    (List.map
-      (fun fn -> test_std ~options dirname (Filename.chop_suffix fn ".ml"))
-      (List.filter
-        (fun fn -> Filename.check_suffix fn ".ml")
-        (Array.to_list (Sys.readdir dirname))))
+  [
+    "safe" >:::
+      (List.map (test_basic dirname) tests);
+    "unsafe" >:::
+      (List.map (test_basic ~options:["-unsafe"] dirname) tests);
+  ]
 
 let suite =
   "ocamlnat" >:::
   [
-    test_std_dir "basic";
-    test_std_dir "misc";
-    test_std_dir ~options:["-unsafe"] "misc-unsafe";
+    suite_basic "basic";
   ]
 
 let _ =
