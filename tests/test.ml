@@ -27,7 +27,7 @@ let readfile fn =
     raise exn
   end
 
-let test_basic ?(options = []) dirname filename =
+let test_basic options dirname filename =
   filename >:: begin fun () ->
     let path = Filename.concat dirname filename in
     let reference = readfile (path ^ ".reference") in
@@ -48,10 +48,14 @@ let suite_basic dirname =
                     (Array.to_list (Sys.readdir dirname))) in
   dirname >:::
   [
-    "safe" >:::
-      (List.map (test_basic dirname) tests);
-    "unsafe" >:::
-      (List.map (test_basic ~options:["-unsafe"] dirname) tests);
+    "safe/gc" >:::
+      (List.map (test_basic ["-regalloc"; "gc"] dirname) tests);
+    "unsafe/gc" >:::
+      (List.map (test_basic ["-regalloc"; "gc"; "-unsafe"] dirname) tests);
+    "safe/ls" >:::
+      (List.map (test_basic ["-regalloc"; "ls"] dirname) tests);
+    "unsafe/ls" >:::
+      (List.map (test_basic ["-regalloc"; "ls"; "-unsafe"] dirname) tests);
   ]
 
 let suite =
