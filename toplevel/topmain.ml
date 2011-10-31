@@ -45,6 +45,15 @@ let file_argument name =
       else exit 2
     end
 
+let regalloc_argument name =
+  let ppf = Format.err_formatter in
+  match name with
+    "gc" | "ls" as name ->
+      Clflags.register_allocator := name
+  | name ->
+      Format.fprintf ppf "Unsupported register allocator: %s\n" name;
+      exit 2
+
 let print_version () =
   Printf.printf "The OCaml native toplevel, version %s\n" Config.version;
   exit 0
@@ -80,9 +89,6 @@ module Options = struct
     "-nolabels",
       Arg.Set classic,
       " Ignore non-optional labels in types";
-    "-nolinscan",
-      Arg.Clear linscan,
-      " Use the graph coloring register allocator";
     "-noprompt",
       Arg.Set noprompt,
       " Suppress all prompts";
@@ -95,6 +101,13 @@ module Options = struct
     "-rectypes",
       Arg.Set recursive_types,
       " Allow arbitrary recursive types";
+    "-regalloc",
+      Arg.String regalloc_argument,
+      Printf.sprintf
+      "<name>  Use register allocator <name>:\n\
+      \        gc   Use the graph coloring register allocator.\n\
+      \        ls   Use the linear scan register allocator.\n\
+      \     Default setting is %S." Config.default_register_allocator;
     "-strict-sequence",
       Arg.Set strict_sequence,
       " Left-hand part of a sequence must have type unit";

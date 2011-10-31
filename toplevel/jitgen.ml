@@ -35,7 +35,7 @@ let rec regalloc ppf round fd =
     fatal_error(fd.Mach.fun_name ^
                 ": function too complex, cannot complete register allocation");
   dump_if ppf dump_live "Liveness analysis" fd;
-  if !linscan then begin
+  if !Clflags.register_allocator = "ls" then begin
     (* Linear Scan *)
     Interval.build_intervals fd;
     if !dump_interval then Printmach.intervals ppf ();
