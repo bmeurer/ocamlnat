@@ -1,7 +1,10 @@
 <{asmcomp,bytecomp,parsing,typing,utils}>: include
 "toplevel/topstart.native": linkall
 # OASIS_START
-# DO NOT EDIT (digest: f66402a2cf359f6b1af1e23ce7bf2619)
+# DO NOT EDIT (digest: 883f7f770df9b1a44bc2cf0ebc5948a6)
+# Executable test
+<tests/test.{native,byte}>: pkg_oUnit
+<tests/*.ml{,i}>: pkg_oUnit
 # Executable ocamlnat
 "toplevel/topstart.native": use_libocamlnat
 "toplevel/topstart.native": pkg_dynlink

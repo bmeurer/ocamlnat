@@ -39,6 +39,18 @@ Executable ocamlnat
   BuildDepends: dynlink
   CompiledObject: native
 
+Executable test
+  Path: tests
+  MainIs: test.ml
+  Install: false
+  BuildDepends: oUnit (>= 1.1.0)
+  CompiledObject: best
+
+Test main
+  TestTools: ocamlnat, test
+  Command: $test -ocamlnat $ocamlnat
+  WorkingDirectory: tests
+
 SourceRepository master
   Type: git
   Branch: master
