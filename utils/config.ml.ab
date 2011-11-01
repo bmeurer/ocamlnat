@@ -26,6 +26,18 @@ let standard_library =
     standard_library_default
 
 let standard_ocamlopt = "$ocamlopt"
+let standard_runtime = "$standard_runtime"
+let ccomp_type = "$ccomp_type"
+let bytecomp_c_compiler = "$bytecomp_c_compiler"
+let bytecomp_c_libraries = ""
+let native_c_compiler = "$native_c_compiler"
+let native_c_libraries = ""
+let native_pack_linker = ""
+let ranlib = ""
+let cc_profile = ""
+let mkdll = ""
+let mkexe = ""
+let mkmaindll = ""
 
 let exec_magic_number = "Caml1999X008"
 and cmi_magic_number = "Caml1999I012"
@@ -63,11 +75,7 @@ let ext_dll = "$ext_dll"
 
 let default_register_allocator = "ls"
 
-let default_executable_name =
-  match Sys.os_type with
-    "Unix" -> "a.out"
-  | "Win32" | "Cygwin" -> "camlprog.exe"
-  | _ -> "camlprog"
+let default_executable_name = "$default_executable_name"
 
 let systhread_supported = $systhread_supported;;
 
