@@ -34,7 +34,7 @@ XStdFilesREADMEFileName:  README
 
 Executable ocamlnat
   Path: toplevel
-  MainIs: topstart.ml
+  MainIs: ocamlnat.ml
   CSources: natjit.c
   BuildDepends: dynlink
   CompiledObject: native
