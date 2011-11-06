@@ -60,6 +60,8 @@ let dir_use ppf = function
   | "topfind" ->
       (* Special case for Findlib support, similar to the topfind.p
          initialization script that ships with Findlib. *)
+      let d = Findlib.package_directory "findlib" in
+      if not (List.mem d !Config.load_path) then dir_directory d;
       Topfind.reset();
       Topfind.add_predicates ["native"; "toploop"];
       Topfind.don't_load ["findlib"];
