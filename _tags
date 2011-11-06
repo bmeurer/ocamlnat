@@ -1,13 +1,16 @@
 <{asmcomp,bytecomp,parsing,typing,utils}>: include
 "toplevel/topstart.native": linkall
 # OASIS_START
-# DO NOT EDIT (digest: 9da92cc087981af244a0cadab46dc7f2)
+# DO NOT EDIT (digest: f2f1441939931e29a343e986dc63ede4)
 # Executable test
 <tests/test.{native,byte}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_oUnit
 # Executable ocamlnat
 "toplevel/ocamlnat.native": use_libocamlnat
+"toplevel/ocamlnat.native": pkg_findlib
 "toplevel/ocamlnat.native": pkg_dynlink
+<toplevel/*.ml{,i}>: pkg_findlib
 <toplevel/*.ml{,i}>: pkg_dynlink
+"toplevel/natjit.c": pkg_findlib
 "toplevel/natjit.c": pkg_dynlink
 # OASIS_STOP
