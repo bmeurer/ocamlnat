@@ -53,6 +53,9 @@ let report_error ppf exn =
   | Compilenv.Error code ->
       Location.print_error_cur_file ppf;
       Compilenv.report_error ppf code
+  | Jitaux.Error err ->
+      Location.print_error_cur_file ppf;
+      Jitaux.report_error ppf err
   | Sys_error msg ->
       Location.print_error_cur_file ppf;
       fprintf ppf "I/O error: %s" msg

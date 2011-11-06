@@ -28,6 +28,11 @@ external nj_putint64: string -> int -> int64 -> unit = "camlnat_jit_putint64" "n
 external nj_malloc: int -> int -> Addr.t * Addr.t = "camlnat_jit_malloc"
 external nj_memcpy: Addr.t -> string -> int -> unit = "camlnat_jit_memcpy" "noalloc"
 
+type error =
+    Undefined_global of string
+
+exception Error of error
+
 (* Sections *)
 
 type section =
@@ -78,7 +83,8 @@ let addr_of_symbol sym =
   with
     Not_found ->
       (* Fallback to the global symbol table *)
-      nj_getsym sym
+      try nj_getsym sym
+      with Failure s -> raise (Error(Undefined_global s))
 
 let symbol_name sym =
   let buf = Buffer.create (String.length sym) in
@@ -330,3 +336,11 @@ let end_assembly() =
   List.iter
     (fun sym -> nj_addsym sym (addr_of_symbol sym))
     !globals
+
+(* Error report *)
+
+open Format
+
+let report_error ppf = function
+  | Undefined_global s ->
+      fprintf ppf "Reference to undefined global `%s'" s

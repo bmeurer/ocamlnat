@@ -12,16 +12,18 @@
 
 (* Common functions for jitting code *)
 
+open Linearize
+
 val jit_text: unit -> unit
 val jit_data: unit -> unit
 
-val jit_label: Linearize.label -> unit
+val jit_label: label -> unit
 val jit_symbol: string -> unit
 val jit_global: string -> unit
 
 type tag
 val jit_symbol_tag: string -> tag
-external jit_label_tag: Linearize.label -> tag = "%identity"
+external jit_label_tag: label -> tag = "%identity"
 
 type reloc =
     RelocAbs32 of tag (* 32bit absolute *)
@@ -49,3 +51,14 @@ val data: Cmm.data_item list -> unit
 
 val begin_assembly: unit -> unit
 val end_assembly: unit -> unit
+
+(* Error report *)
+
+type error =
+    Undefined_global of string
+
+exception Error of error
+
+open Format
+
+val report_error: formatter -> error -> unit
