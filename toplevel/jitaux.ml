@@ -295,8 +295,14 @@ let begin_assembly() =
 
 let efa =
   { efa_label = if Arch.size_addr == 4
-                then (fun lbl -> jit_reloc (RelocAbs32(jit_label_tag lbl)); jit_int32l 0l)
-                else (fun lbl -> jit_reloc (RelocAbs64(jit_label_tag lbl)); jit_int64L 0L);
+                then (fun lbl ->
+                        (* .long lbl *)
+                        jit_reloc (RelocAbs32(jit_label_tag lbl));
+                        jit_int32l 0l)
+                else (fun lbl ->
+                        (* .quad lbl *)
+                        jit_reloc (RelocAbs64(jit_label_tag lbl));
+                        jit_int64L 0L);
     efa_16 = jit_int16;
     efa_32 = jit_int32l;
     efa_word = if Arch.size_addr == 4 then jit_int32 else jit_int64;
