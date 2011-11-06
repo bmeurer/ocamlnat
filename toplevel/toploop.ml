@@ -72,9 +72,9 @@ let rec eval_path = function
       if Ident.persistent id || Ident.global id
       then global_symbol id
       else toplevel_value id
-  | Pdot(p, s, pos) ->
+  | Pdot(p, _, pos) ->
       Obj.field (eval_path p) pos
-  | Papply(p1, p2) ->
+  | Papply _ ->
       fatal_error "Toploop.eval_path"
 
 (* To print values *)
