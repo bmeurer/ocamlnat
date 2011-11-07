@@ -14,6 +14,7 @@
 
 open Config
 open Format
+open Jitaux
 open Lambda
 open Misc
 open Outcometree
@@ -22,23 +23,14 @@ open Parsetree
 open Typedtree
 open Types
 
-type evaluation_outcome = Result of Obj.t | Exception of exn
-
-external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
-external nj_run: string -> Obj.t = "camlnat_jit_run"
-
 let global_symbol id =
   let sym = Compilenv.symbol_for_global id in
-  try nj_loadsym sym
+  try jit_loadsym sym
   with _ -> fatal_error ("Toploop.global_symbol " ^ (Ident.unique_name id))
 
 let need_symbol sym =
-  try ignore (nj_loadsym sym); false
+  try ignore (jit_loadsym sym); false
   with _ -> true
-
-let run entry =
-  try Result(nj_run entry)
-  with exn -> Exception exn
 
 type directive_fun =
    | Directive_none of (unit -> unit)
@@ -135,7 +127,7 @@ let load_lambda ppf (size, lam) =
   let slam = Simplif.simplify_lambda lam in
   if !Clflags.dump_lambda then fprintf ppf "%a@." Printlambda.lambda slam;
   Jitgen.compile ~toplevel:need_symbol ppf (size, lam);
-  run !phrase_name
+  jit_execsym !phrase_name
 
 (* Print the outcome of an evaluation *)
 
