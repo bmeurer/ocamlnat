@@ -14,6 +14,15 @@
 
 open Linearize
 
+(* Execution *)
+
+type evaluation_outcome = Result of Obj.t | Exception of exn
+
+val jit_execsym: string -> evaluation_outcome
+val jit_loadsym: string -> Obj.t
+
+(* Code generation *)
+
 val jit_text: unit -> unit
 val jit_data: unit -> unit
 

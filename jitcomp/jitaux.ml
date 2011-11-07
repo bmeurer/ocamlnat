@@ -16,6 +16,21 @@ open Cmm
 open Emitaux
 open Linearize
 
+(* Native addressing *)
+
+module Addr =
+struct
+  include Nativeint
+
+  external of_int64: int64 -> t = "%int64_to_nativeint"
+  external to_int64: t -> int64 = "%int64_of_nativeint"
+
+  let add_int x y =
+    add x (of_int y)
+end
+
+external nj_execsym: string -> Obj.t = "camlnat_jit_execsym"
+external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
 external nj_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
 external nj_getsym: string -> Addr.t = "camlnat_jit_getsym"
 
@@ -32,6 +47,18 @@ type error =
     Undefined_global of string
 
 exception Error of error
+
+(* Execution *)
+
+type evaluation_outcome = Result of Obj.t | Exception of exn
+
+let jit_execsym sym =
+  try Result(nj_execsym sym)
+  with exn -> Exception exn
+
+let jit_loadsym sym =
+  try nj_loadsym sym
+  with Failure s -> raise (Error(Undefined_global s))
 
 (* Sections *)
 

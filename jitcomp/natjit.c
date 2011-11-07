@@ -252,28 +252,7 @@ value camlnat_jit_memcpy(value dst, value src, value size)
   return Val_unit;
 }
 
-value camlnat_jit_loadsym(value symbol)
-{
-  CAMLparam1 (symbol);
-  CAMLlocal1 (sym);
-  
-  sym = (value)getsym(NULL, String_val(symbol));
-  if (!sym) sym = caml_natdynlink_loadsym(symbol);
-  CAMLreturn(sym);
-}
-
-value camlnat_jit_addsym(value symbol, value addr)
-{
-  addsym(String_val(symbol), (void *)Nativeint_val(addr));
-  return Val_unit;
-}
-
-value camlnat_jit_getsym(value symbol)
-{
-  return caml_copy_nativeint((intnat)camlnat_jit_loadsym(symbol));
-}
-
-value camlnat_jit_run(value symbol)
+value camlnat_jit_execsym(value symbol)
 {
   CAMLparam1 (symbol);
   CAMLlocal1 (result);
@@ -307,4 +286,25 @@ value camlnat_jit_run(value symbol)
 #undef optsym
 
   CAMLreturn (result);
+}
+
+value camlnat_jit_loadsym(value symbol)
+{
+  CAMLparam1 (symbol);
+  CAMLlocal1 (sym);
+
+  sym = (value)getsym(NULL, String_val(symbol));
+  if (!sym) sym = caml_natdynlink_loadsym(symbol);
+  CAMLreturn(sym);
+}
+
+value camlnat_jit_addsym(value symbol, value addr)
+{
+  addsym(String_val(symbol), (void *)Nativeint_val(addr));
+  return Val_unit;
+}
+
+value camlnat_jit_getsym(value symbol)
+{
+  return caml_copy_nativeint((intnat)camlnat_jit_loadsym(symbol));
 }

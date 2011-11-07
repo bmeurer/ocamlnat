@@ -14,6 +14,7 @@
 
 open Config
 open Format
+open Jitaux
 open Lambda
 open Misc
 open Outcometree
@@ -22,23 +23,14 @@ open Parsetree
 open Typedtree
 open Types
 
-type evaluation_outcome = Result of Obj.t | Exception of exn
-
-external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
-external nj_run: string -> Obj.t = "camlnat_jit_run"
-
 let global_symbol id =
   let sym = Compilenv.symbol_for_global id in
-  try nj_loadsym sym
+  try jit_loadsym sym
   with _ -> fatal_error ("Toploop.global_symbol " ^ (Ident.unique_name id))
 
 let need_symbol sym =
-  try ignore (nj_loadsym sym); false
+  try ignore (jit_loadsym sym); false
   with _ -> true
-
-let run entry =
-  try Result(nj_run entry)
-  with exn -> Exception exn
 
 type directive_fun =
    | Directive_none of (unit -> unit)
@@ -135,7 +127,7 @@ let load_lambda ppf (size, lam) =
   let slam = Simplif.simplify_lambda lam in
   if !Clflags.dump_lambda then fprintf ppf "%a@." Printlambda.lambda slam;
   Jitgen.compile ~toplevel:need_symbol ppf (size, lam);
-  run !phrase_name
+  jit_execsym !phrase_name
 
 (* Print the outcome of an evaluation *)
 
@@ -304,7 +296,7 @@ let use_file ppf name =
         with
         | Exit -> false
         | Sys.Break -> fprintf ppf "Interrupted.@."; false
-        | x -> Errors.report_error ppf x; false) in
+        | x -> Jiterrors.report_error ppf x; false) in
     close_in ic;
     success
   with Not_found -> fprintf ppf "Cannot find file %s.@." name; false
@@ -355,6 +347,28 @@ let refill_lexbuf buffer len =
       len
   end
 
+(* Initialize the search path.
+   The current directory is always searched first,
+   then the directories specified with the -I option (in command-line order),
+   then the standard library directory. *)
+
+let init_path () =
+  let dirs =
+    if !Clflags.use_threads
+    then "+threads" :: !Clflags.include_dirs
+    else !Clflags.include_dirs in
+  let exp_dirs =
+    List.map (expand_directory Config.standard_library) dirs in
+  load_path := "" :: List.rev_append exp_dirs (Clflags.std_include_dir ());
+  Env.reset_cache ()
+
+(* Return the initial environment in which compilation proceeds. *)
+
+let initial_env () =
+  Ident.reinit();
+  try Env.open_pers_signature "Pervasives" Env.initial
+  with Not_found -> fatal_error "cannot open pervasives.cmi"
+    
 (* Toplevel initialization. Performed here instead of at the
    beginning of loop() so that user code linked in with ocamlmktop
    can call directives from Topdirs. *)
@@ -362,7 +376,7 @@ let refill_lexbuf buffer len =
 let _ =
   Sys.interactive := true;
   Dynlink.init ();
-  Optcompile.init_path();
+  init_path();
   Clflags.dlcode := true;
   ()
 
@@ -387,7 +401,7 @@ let set_paths () =
   ()
 
 let initialize_toplevel_env () =
-  toplevel_env := Optcompile.initial_env()
+  toplevel_env := initial_env()
 
 (* The interactive loop *)
 
@@ -415,7 +429,7 @@ let loop ppf =
     | End_of_file -> exit 0
     | Sys.Break -> fprintf ppf "Interrupted.@."; Btype.backtrack snap
     | PPerror -> ()
-    | x -> Errors.report_error ppf x; Btype.backtrack snap
+    | x -> Jiterrors.report_error ppf x; Btype.backtrack snap
   done
 
 (* Execute a script *)
@@ -426,7 +440,7 @@ let run_script ppf name args =
   Array.blit args 0 Sys.argv 0 len;
   Obj.truncate (Obj.repr Sys.argv) len;
   Arg.current := 0;
-  Optcompile.init_path();
-  toplevel_env := Optcompile.initial_env();
+  init_path();
+  initialize_toplevel_env();
   Sys.interactive := false;
   use_silently ppf name

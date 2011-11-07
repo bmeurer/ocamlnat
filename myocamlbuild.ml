@@ -11,7 +11,7 @@
 (***********************************************************************)
 
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 98a87aba7cea6dabc609dd2d47c15992) *)
+(* DO NOT EDIT (digest: cd06a31598f2e187cd15f96f98a103dc) *)
 module OASISGettext = struct
 # 21 "/opt/local/var/macports/build/_Users_bmeurer_Desktop_Projects_MacPorts_ports_devel_caml-oasis/caml-oasis/work/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -464,7 +464,7 @@ open Ocamlbuild_plugin;;
 let package_default =
   {
      MyOCamlbuildBase.lib_ocaml = [];
-     lib_c = [("ocamlnat", "toplevel", [])];
+     lib_c = [("ocamlnat", ".", [])];
      flags = [];
      }
   ;;
@@ -524,7 +524,7 @@ List.iter
    "selection.ml"];;
 
 mk_arch_rule
-  ~dir:"toplevel"
+  ~dir:"jitcomp"
   ~src:"jit.ml"
   ~dst:"jit.ml";;
 

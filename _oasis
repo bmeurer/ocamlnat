@@ -33,9 +33,9 @@ XStdFilesINSTALLFileName: INSTALL
 XStdFilesREADMEFileName:  README
 
 Executable ocamlnat
-  Path: toplevel
-  MainIs: ocamlnat.ml
-  CSources: natjit.c
+  Path: .
+  MainIs: toplevel/ocamlnat.ml
+  CSources: jitcomp/natjit.c
   BuildDepends: dynlink, findlib (>= 1.2.7)
   CompiledObject: native
 
