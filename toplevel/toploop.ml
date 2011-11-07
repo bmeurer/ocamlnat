@@ -296,7 +296,7 @@ let use_file ppf name =
         with
         | Exit -> false
         | Sys.Break -> fprintf ppf "Interrupted.@."; false
-        | x -> Jiterrors.report_error ppf x; false) in
+        | x -> Toperrors.report_error ppf x; false) in
     close_in ic;
     success
   with Not_found -> fprintf ppf "Cannot find file %s.@." name; false
@@ -429,7 +429,7 @@ let loop ppf =
     | End_of_file -> exit 0
     | Sys.Break -> fprintf ppf "Interrupted.@."; Btype.backtrack snap
     | PPerror -> ()
-    | x -> Jiterrors.report_error ppf x; Btype.backtrack snap
+    | x -> Toperrors.report_error ppf x; Btype.backtrack snap
   done
 
 (* Execute a script *)
