@@ -477,8 +477,8 @@ module Custom = struct
   let dispatch e =
     let env =
       BaseEnvLight.load
-        ~filename:(Pathname.basename BaseEnvLight.default_filename)
         ~allow_empty:true
+        ~filename:(Pathname.basename BaseEnvLight.default_filename)
         ()
     and sf =
       Printf.sprintf
