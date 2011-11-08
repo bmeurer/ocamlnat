@@ -60,14 +60,3 @@ val data: Cmm.data_item list -> unit
 
 val begin_assembly: unit -> unit
 val end_assembly: unit -> unit
-
-(* Error report *)
-
-type error =
-    Undefined_global of string
-
-exception Error of error
-
-open Format
-
-val report_error: formatter -> error -> unit

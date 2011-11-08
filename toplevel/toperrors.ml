@@ -53,12 +53,9 @@ let report_error ppf exn =
   | Compilenv.Error code ->
       Location.print_error_cur_file ppf;
       Compilenv.report_error ppf code
-  | Jitaux.Error err ->
+  | Jitlink.Error err ->
       Location.print_error_cur_file ppf;
-      Jitaux.report_error ppf err
-  | Topmisc.Error err ->
-      Location.print_error_cur_file ppf;
-      Topmisc.report_error ppf err
+      Jitlink.report_error ppf err
   | Findlib.No_such_package(pkg, reason) ->
       fprintf ppf "No such package: %s" pkg;
       if reason <> "" then fprintf ppf " - %s" reason

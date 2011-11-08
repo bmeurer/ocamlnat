@@ -14,6 +14,7 @@
 
 open Cmm
 open Emitaux
+open Jitlink
 open Linearize
 
 (* Native addressing *)
@@ -42,11 +43,6 @@ external nj_putint32: string -> int -> int32 -> unit = "camlnat_jit_putint32" "n
 external nj_putint64: string -> int -> int64 -> unit = "camlnat_jit_putint64" "noalloc"
 external nj_malloc: int -> int -> Addr.t * Addr.t = "camlnat_jit_malloc"
 external nj_memcpy: Addr.t -> string -> int -> unit = "camlnat_jit_memcpy" "noalloc"
-
-type error =
-    Undefined_global of string
-
-exception Error of error
 
 (* Execution *)
 
@@ -369,11 +365,3 @@ let end_assembly() =
   List.iter
     (fun sym -> nj_addsym sym (addr_of_symbol sym))
     !globals
-
-(* Error report *)
-
-open Format
-
-let report_error ppf = function
-  | Undefined_global s ->
-      fprintf ppf "Reference to undefined global `%s'" s

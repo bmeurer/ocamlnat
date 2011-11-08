@@ -30,7 +30,9 @@ let _ = Hashtbl.add directive_table "quit" (Directive_none dir_quit)
 
 (* To add a directory to the load path *)
 
-let dir_directory = Topmisc.prepend_load_path
+let dir_directory s =
+  let d = expand_directory Config.standard_library s in
+  Config.load_path := d :: !Config.load_path
 
 let _ = Hashtbl.add directive_table "directory" (Directive_string dir_directory)
 
@@ -48,9 +50,9 @@ let _ = Hashtbl.add directive_table "cd" (Directive_string dir_cd)
 
 (* Load in-core a .cmxs file *)
 
-let load_file _ name = Topmisc.loadfile name; true
+let load_file _ name = Jitlink.loadfile name; true
 
-let dir_load _ name = Topmisc.loadfile name
+let dir_load _ name = Jitlink.loadfile name
 
 let _ = Hashtbl.add directive_table "load" (Directive_string(dir_load std_out))
 

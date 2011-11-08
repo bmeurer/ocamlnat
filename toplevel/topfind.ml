@@ -13,27 +13,94 @@
 (* Load packages from toploops and scripts *)
 
 open Format
+open Misc
 open Toploop
-open Topmisc
+
+(* Utility functions *)
+
+let rec uniq = function
+    x :: l when List.mem x l -> uniq l
+  | x :: l -> x :: uniq l
+  | l -> l
+
+let split_in_words s =
+  let l = String.length s in
+  let rec split i j =
+    if j < l then
+      let j' = succ j in
+      match s.[j] with
+        (' '|'\t'|'\n'|'\r'|',') ->
+          let rem = split j' j' in
+          if i < j then (String.sub s i (j - i)) :: rem else rem
+      | _ -> split i j'
+    else
+      if i < j then [String.sub s i (j-i)] else []
+  in
+  split 0 0
+
+let normalize_dirname d =
+  (* Converts the file name of the directory [d] to the normal form.
+   * For Unix, the '/' characters at the end are removed, and multiple
+   * '/' are deleted.
+   * For Windows, all '/' characters are converted to '\'. Two
+   * backslashes at the beginning are tolerated.
+   *)
+  let s = String.copy d in
+  let l = String.length d in
+  let norm_dir_unix() =
+    for k = 1 to l - 1 do
+      if s.[k] = '/' && s.[k-1] = '/' then s.[k] <- Char.chr 0;
+      if s.[k] = '/' && k = l-1 then s.[k] <- Char.chr 0
+    done
+  in
+  let norm_dir_win() =
+    if l >= 1 && s.[0] = '/' then s.[0] <- '\\';
+    if l >= 2 && s.[1] = '/' then s.[1] <- '\\';
+    for k = 2 to l - 1 do
+      if s.[k] = '/' then s.[k] <- '\\';
+      if s.[k] = '\\' && s.[k-1] = '\\' then s.[k] <- Char.chr 0;
+      if s.[k] = '\\' && k = l-1 then s.[k] <- Char.chr 0
+    done
+  in
+  let expunge() =
+    let n = ref 0 in
+    for k = 0 to l - 1 do
+      if s.[k] = Char.chr 0 then incr n
+    done;
+    let s' = String.create (l - !n) in
+    n := 0;
+    for k = 0 to l - 1 do
+      if s.[k] <> Char.chr 0 then begin
+	s'.[ !n ] <- s.[k];
+	incr n
+      end
+    done;
+    s'
+  in
+  match Sys.os_type with
+      "Unix" | "Cygwin" -> norm_dir_unix(); expunge()
+    | "Win32" -> norm_dir_win(); expunge()
+    | _ -> failwith "This os_type is not supported"
+
+(* Topfind emulation *)
 
 let real_toploop = !Sys.interactive
 
-let directories = ref ([Findlib.ocaml_stdlib()])
 let forbidden = ref ([] : string list)
 let loaded = ref ([] : string list)
 let predicates = ref ([] : string list)
 
 let add_directory d =
   let d = normalize_dirname d in
-  if not (List.mem d !directories) then begin
-    Topmisc.prepend_load_path d;
-    directories := d :: !directories;
+  let d = expand_directory Config.standard_library d in
+  if not (List.mem d !Config.load_path) then begin
+    Config.load_path := d :: !Config.load_path;
     if real_toploop then
       fprintf std_formatter "@[`%s' added to search path@]@." d
   end
 
 let add_predicates pl =
-  predicates := pl @@ !predicates
+  predicates := uniq (pl @ !predicates)
 
 let syntax s =
   add_predicates ["syntax"; s]
@@ -61,7 +128,7 @@ let load pl =
            List.iter
              (fun arch ->
                 let arch = Findlib.resolve_path ~base:d arch in
-                loadfile arch;
+                Jitlink.loadfile arch;
                 if real_toploop then
                   fprintf std_formatter "@[`%s' loaded@]@." arch)
              archives
@@ -76,13 +143,13 @@ let load_deeply pl =
   load (Findlib.package_deep_ancestors !predicates pl)
 
 let don't_load pl =
-  forbidden := pl @@ !forbidden;
+  forbidden := uniq (pl @ !forbidden);
   (* Check if packages exist *)
-  List.iter (ignore +++ Findlib.package_directory) pl
+  List.iter (fun p -> ignore (Findlib.package_directory p)) pl
 
 let don't_load_deeply pl =
   (* Check if packages exist *)
-  List.iter (ignore +++ Findlib.package_directory) pl;
+  List.iter (fun p -> ignore (Findlib.package_directory p)) pl;
   (* Add the sorted list of ancestors to the forbidden packages *)
   don't_load (Findlib.package_deep_ancestors !predicates pl)
 
@@ -96,12 +163,12 @@ let reset() =
   Hashtbl.replace
     directive_table
     "require"
-    (Directive_string(protect (load_deeply +++ split_in_words)));
+    (Directive_string(protect (fun s -> load_deeply (split_in_words s))));
   (* Add "#predicates" directive *)
   Hashtbl.replace
     directive_table
     "predicates"
-    (Directive_string(protect (add_predicates +++ split_in_words)));
+    (Directive_string(protect (fun s -> add_predicates (split_in_words s))));
   (* Add "#camlp4o" directive *)
   Hashtbl.replace
     directive_table

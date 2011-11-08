@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* Miscellaneous toplevel types and functions *)
+(* Linker functionality *)
 
 open Misc
 
@@ -18,87 +18,12 @@ type error =
     Cannot_generate_cmxs
   | File_not_found of string
   | Unsupported_file of string
+  | Undefined_global of string
   | Dynamic_linking_failed of string * Dynlink.error
 
 exception Error of error
 
-(* List functions *)
-
-let rec (@@) s t =
-  match s with
-    [] -> t
-  | x :: s -> let s = s @@ t in if List.mem x s then s else x :: s
-
-let split_in_words s =
-  let l = String.length s in
-  let rec split i j =
-    if j < l then
-      let j' = succ j in
-      match s.[j] with
-        (' '|'\t'|'\n'|'\r'|',') ->
-          let rem = split j' j' in
-          if i < j then (String.sub s i (j - i)) :: rem else rem
-      | _ -> split i j'
-    else
-      if i < j then [String.sub s i (j-i)] else []
-  in
-  split 0 0
-
-(* Higher-order functions *)
-
-let (+++) f g x = f (g x)
-
-(* Filename functions *)
-
-let normalize_dirname d =
-  (* Converts the file name of the directory [d] to the normal form.
-   * For Unix, the '/' characters at the end are removed, and multiple
-   * '/' are deleted.
-   * For Windows, all '/' characters are converted to '\'. Two
-   * backslashes at the beginning are tolerated.
-   *)
-  let s = String.copy d in
-  let l = String.length d in
-  let norm_dir_unix() =
-    for k = 1 to l - 1 do
-      if s.[k] = '/' && s.[k-1] = '/' then s.[k] <- Char.chr 0;
-      if s.[k] = '/' && k = l-1 then s.[k] <- Char.chr 0
-    done
-  in
-  let norm_dir_win() =
-    if l >= 1 && s.[0] = '/' then s.[0] <- '\\';
-    if l >= 2 && s.[1] = '/' then s.[1] <- '\\';
-    for k = 2 to l - 1 do
-      if s.[k] = '/' then s.[k] <- '\\';
-      if s.[k] = '\\' && s.[k-1] = '\\' then s.[k] <- Char.chr 0;
-      if s.[k] = '\\' && k = l-1 then s.[k] <- Char.chr 0
-    done
-  in
-  let expunge() =
-    let n = ref 0 in
-    for k = 0 to l - 1 do
-      if s.[k] = Char.chr 0 then incr n
-    done;
-    let s' = String.create (l - !n) in
-    n := 0;
-    for k = 0 to l - 1 do
-      if s.[k] <> Char.chr 0 then begin
-	s'.[ !n ] <- s.[k];
-	incr n
-      end
-    done;
-    s'
-  in
-  match Sys.os_type with
-      "Unix" | "Cygwin" -> norm_dir_unix(); expunge()
-    | "Win32" -> norm_dir_win(); expunge()
-    | _ -> failwith "This os_type is not supported"
-
 (* Load in-core a .cmxs file *)
-
-let prepend_load_path s =
-  let d = expand_directory Config.standard_library s in
-  Config.load_path := d :: (List.filter ((<>) d) !Config.load_path)
 
 let loadfile name0 =
   try
@@ -135,6 +60,8 @@ let report_error ppf = function
       fprintf ppf "File not found `%s'" name
   | Unsupported_file name ->
       fprintf ppf "Unsupported file `%s'" name
+  | Undefined_global s ->
+      fprintf ppf "Reference to undefined global `%s'" s
   | Dynamic_linking_failed(name, error) ->
       fprintf ppf "Error while loading `%s' - %s"
         name (Dynlink.error_message error)
