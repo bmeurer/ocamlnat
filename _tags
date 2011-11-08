@@ -1,6 +1,6 @@
 <src/{asmcomp,bytecomp,jitcomp,parsing,toplevel,typing,utils}>: include
-<src/*/*.ml{,i}>: pkg_dynlink
-<src/*/*.ml{,i}>: pkg_findlib
+<src/*/*.ml{,i}>: pkg_dynlink, pkg_findlib
+
 # OASIS_START
 # DO NOT EDIT (digest: 319604054856491a87bb2d6dc81fccc0)
 # Executable test
