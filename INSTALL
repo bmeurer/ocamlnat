@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 2f5c2f2cd6138dac01e7f216e0ae52f7) *)
+(* DO NOT EDIT (digest: 762227767d2bc33a5b44b821078b6369) *)
 This is the INSTALL file for the ocamlnat distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
@@ -9,7 +9,7 @@ Dependencies
 ============
 
 In order to compile this package, you will need:
-* ocaml (>= 3.12.1) for all, test main
+* ocaml (>= 3.12.0) for all, test main
 * findlib
 * oUnit (>= 1.1.0) for executable test
 
