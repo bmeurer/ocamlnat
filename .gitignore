@@ -1,4 +1,4 @@
 _build
 setup.data
-utils/config.ml
+src/utils/config.ml
 *.native

@@ -1,20 +1,17 @@
-<{asmcomp,bytecomp,jitcomp,parsing,typing,utils}>: include
-<jitcomp/*.ml{,i}>: pkg_dynlink
-<jitcomp/*.ml{,i}>: pkg_findlib
+<src/{asmcomp,bytecomp,jitcomp,parsing,toplevel,typing,utils}>: include
+<src/*/*.ml{,i}>: pkg_dynlink
+<src/*/*.ml{,i}>: pkg_findlib
 # OASIS_START
-# DO NOT EDIT (digest: 082e443cb5630d71648a44f7ea50a14a)
+# DO NOT EDIT (digest: 319604054856491a87bb2d6dc81fccc0)
 # Executable test
 <tests/test.{native,byte}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_oUnit
 # Executable ocamlnat
-"toplevel/ocamlnat.native": use_libocamlnat
-"toplevel/ocamlnat.native": pkg_findlib
-"toplevel/ocamlnat.native": pkg_dynlink
-<*.ml{,i}>: pkg_findlib
-<*.ml{,i}>: pkg_dynlink
-<toplevel/*.ml{,i}>: pkg_findlib
-<toplevel/*.ml{,i}>: pkg_dynlink
-"jitcomp/natjit.c": pkg_findlib
-"jitcomp/natjit.c": pkg_dynlink
-"toplevel": include
+"src/ocamlnat.native": use_libocamlnat
+"src/ocamlnat.native": pkg_findlib
+"src/ocamlnat.native": pkg_dynlink
+<src/*.ml{,i}>: pkg_findlib
+<src/*.ml{,i}>: pkg_dynlink
+"src/jitcomp/natjit.c": pkg_findlib
+"src/jitcomp/natjit.c": pkg_dynlink
 # OASIS_STOP

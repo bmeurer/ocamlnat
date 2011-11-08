@@ -11,7 +11,7 @@
 (***********************************************************************)
 
 (* OASIS_START *)
-(* DO NOT EDIT (digest: cd06a31598f2e187cd15f96f98a103dc) *)
+(* DO NOT EDIT (digest: 45735907286fe6c51c44a4a6d1075ba8) *)
 module OASISGettext = struct
 # 21 "/opt/local/var/macports/build/_Users_bmeurer_Desktop_Projects_MacPorts_ports_devel_caml-oasis/caml-oasis/work/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -464,7 +464,7 @@ open Ocamlbuild_plugin;;
 let package_default =
   {
      MyOCamlbuildBase.lib_ocaml = [];
-     lib_c = [("ocamlnat", ".", [])];
+     lib_c = [("ocamlnat", "src", [])];
      flags = [];
      }
   ;;
@@ -504,8 +504,8 @@ flag ["compile"; "c"]
 (* Choose the right machine-dependent files *)
 
 let mk_arch_rule ~dir ~src ~dst =
-  let prod = dir/dst in
-  let dep = dir/arch/src in
+  let prod = "src"/dir/dst in
+  let dep = "src"/dir/arch/src in
   rule (sf "arch specific files %S%%" dst) ~prod ~dep begin
     if windows then fun env _ -> cp (env dep) (env prod)
     else fun env _ -> ln_s (env (arch/src)) (env prod)

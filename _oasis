@@ -13,7 +13,7 @@ Copyrights:
   (c) 1996-2011 INRIA Rocquencourt,
   (c) 2010-2011 Benedikt Meurer,
   (c) 2011 University of Siegen
-FilesAB:      utils/config.ml.ab
+FilesAB:      src/utils/config.ml.ab
 Homepage:     https://github.com/bmeurer/ocamlnat
 Plugins:      DevFiles (0.2), StdFiles (0.2)
 BuildTools:   ocamlbuild
@@ -33,8 +33,8 @@ XStdFilesINSTALLFileName: INSTALL
 XStdFilesREADMEFileName:  README
 
 Executable ocamlnat
-  Path: .
-  MainIs: toplevel/ocamlnat.ml
+  Path: src
+  MainIs: ocamlnat.ml
   CSources: jitcomp/natjit.c
   BuildDepends: dynlink, findlib (>= 1.2.7)
   CompiledObject: native
