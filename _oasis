@@ -36,7 +36,7 @@ Executable ocamlnat
   Path: .
   MainIs: toplevel/ocamlnat.ml
   CSources: jitcomp/natjit.c
-  BuildDepends: dynlink
+  BuildDepends: dynlink, findlib (>= 1.2.7)
   CompiledObject: native
 
 Executable test

@@ -50,55 +50,26 @@ let _ = Hashtbl.add directive_table "cd" (Directive_string dir_cd)
 
 (* Load in-core a .cmxs file *)
 
-let load_file ppf name0 =
-  begin try
-    let name = (try find_in_path !Config.load_path name0
-                with Not_found ->
-                  raise (Dynlink.Error(Dynlink.File_not_found name0))) in
-    if Filename.check_suffix name ".cmxs" then begin
-      (* .cmxs files can be loaded directly *)
-      Dynlink.loadfile name
-    end else if Filename.check_suffix name ".cmxa" then begin
-      (* Need to generate a temporary .cmxs file first *)
-      let temp = (Filename.basename (Filename.chop_extension name0)) in
-      let cmxs = Filename.temp_file temp ".cmxs" in
-      let cmd = Printf.sprintf "%s -linkall -shared -o %s %s"
-                  (Filename.quote Config.standard_ocamlopt)
-                  (Filename.quote cmxs)
-                  (Filename.quote name) in
-      if Ccomp.command cmd != 0 then begin
-        let reason = "Failed to generate temporary cmxs file" in
-        raise (Dynlink.Error(Dynlink.Cannot_open_dll reason))
-      end;
-      begin try
-        Dynlink.loadfile cmxs;
-        begin try Sys.remove cmxs with Sys_error _ -> () end
-      with exn ->
-        begin try Sys.remove cmxs with Sys_error _ -> () end;
-        raise exn
-      end
-    end else begin
-      let reason = "Unsupported file: " ^ name in
-      raise (Dynlink.Error(Dynlink.Cannot_open_dll reason))
-    end;
-    true
-  with
-    Dynlink.Error error ->
-      fprintf ppf "Error while loading %s: %s.@."
-        name0 (Dynlink.error_message error);
-      false
-  | exn ->
-      print_exception_outcome ppf exn;
-      false
-  end
+let load_file _ name = Jitlink.loadfile name; true
 
-let dir_load ppf name = ignore (load_file ppf name)
+let dir_load _ name = Jitlink.loadfile name
 
 let _ = Hashtbl.add directive_table "load" (Directive_string(dir_load std_out))
 
 (* Load commands from a file *)
 
-let dir_use ppf name = ignore (Toploop.use_file ppf name)
+let dir_use ppf = function
+  | "topfind" ->
+      (* Special case for Findlib support, similar to the topfind.p
+         initialization script that ships with Findlib. *)
+      let d = Findlib.package_directory "findlib" in
+      if not (List.mem d !Config.load_path) then dir_directory d;
+      Topfind.reset();
+      Topfind.add_predicates ["native"; "toploop"];
+      Topfind.don't_load ["findlib"];
+      Topfind.announce()
+  | name ->
+      ignore (Toploop.use_file ppf name)
 
 let _ = Hashtbl.add directive_table "use" (Directive_string(dir_use std_out))
 
