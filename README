@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 3059d203ce85bca0279b250d2cc03abc) *)
+(* DO NOT EDIT (digest: b537351d35a71d57f2c99db1ce31fa2d) *)
 This is the README file for the ocamlnat distribution.
 
 (c) 1996-2011 INRIA Rocquencourt
@@ -23,7 +23,7 @@ support it.
 See the files INSTALL for building and installation instructions. See the
 file LICENSE for copying conditions. 
 
-Home page: https://github.com/bmeurer/ocamlnat
+Home page: http://benediktmeurer.de/ocamlnat
 
 
 (* OASIS_STOP *)

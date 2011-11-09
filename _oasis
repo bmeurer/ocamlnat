@@ -14,7 +14,7 @@ Copyrights:
   (c) 2010-2011 Benedikt Meurer,
   (c) 2011 University of Siegen
 FilesAB:      src/utils/config.ml.ab
-Homepage:     https://github.com/bmeurer/ocamlnat
+Homepage:     http://benediktmeurer.de/ocamlnat
 Plugins:      DevFiles (0.2), StdFiles (0.2)
 BuildTools:   ocamlbuild
 
