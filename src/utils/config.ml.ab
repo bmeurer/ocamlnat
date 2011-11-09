@@ -73,7 +73,7 @@ let ext_asm = "$ext_asm"
 let ext_lib = "$ext_lib"
 let ext_dll = "$ext_dll"
 
-let default_register_allocator = "ls"
+let default_register_allocator = "gc"
 
 let default_executable_name = "$default_executable_name"
 
