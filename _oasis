@@ -1,6 +1,6 @@
 OASISFormat:  0.2
 Name:         ocamlnat
-Version:      0.1.0+dev
+Version:      0.1.1
 OCamlVersion: >= 3.12.1
 LicenseFile:  LICENSE
 License:      QPL
