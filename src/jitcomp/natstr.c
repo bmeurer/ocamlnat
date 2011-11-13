@@ -3,7 +3,6 @@
 /*                           Objective Caml                            */
 /*                                                                     */
 /*                  Benedikt Meurer, University of Siegen              */
-/*                 Marcell Fischbach, University of Siegen             */
 /*                                                                     */
 /*    Copyright 2011 Lehrstuhl für Compilerbau und Softwareanalyse,    */
 /*    Universität Siegen. All rights reserved. This file is distri-    */
@@ -11,7 +10,7 @@
 /*                                                                     */
 /***********************************************************************/
 
-/* String extensions for the native toplevel */
+/* String functions for the native toplevel */
 
 #include <stdio.h>
 #include <stdlib.h>
