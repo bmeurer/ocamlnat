@@ -30,17 +30,25 @@ struct
     add x (of_int y)
 end
 
+(* String extensions *)
+
+module String =
+struct
+  include String
+
+  external unsafe_get16: string -> int -> int = "camlnat_str_get16" "noalloc"
+  external unsafe_get32: string -> int -> int32 = "camlnat_str_get32"
+  external unsafe_get64: string -> int -> int64 = "camlnat_str_get64"
+  external unsafe_set16: string -> int -> int -> unit = "camlnat_str_set16" "noalloc"
+  external unsafe_set32: string -> int -> int32 -> unit = "camlnat_str_set32" "noalloc"
+  external unsafe_set64: string -> int -> int64 -> unit = "camlnat_str_set64" "noalloc"
+end
+
 external nj_execsym: string -> Obj.t = "camlnat_jit_execsym"
 external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
 external nj_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
 external nj_getsym: string -> Addr.t = "camlnat_jit_getsym"
 
-external nj_getint16: string -> int -> int = "camlnat_jit_getint16" "noalloc"
-external nj_getint32: string -> int -> int32 = "camlnat_jit_getint32"
-external nj_getint64: string -> int -> int64 = "camlnat_jit_getint64"
-external nj_putint16: string -> int -> int -> unit = "camlnat_jit_putint16" "noalloc"
-external nj_putint32: string -> int -> int32 -> unit = "camlnat_jit_putint32" "noalloc"
-external nj_putint64: string -> int -> int64 -> unit = "camlnat_jit_putint64" "noalloc"
 external nj_malloc: int -> int -> Addr.t * Addr.t = "camlnat_jit_malloc"
 external nj_memcpy: Addr.t -> string -> int -> unit = "camlnat_jit_memcpy" "noalloc"
 
@@ -162,20 +170,20 @@ let patch_reloc (sec, ofs, rel) =
   match rel with
     RelocAbs32 tag ->
       let a = Addr.to_int32 (addr_of_tag tag) in
-      let d = nj_getint32 sec.sec_buf ofs in
+      let d = String.unsafe_get32 sec.sec_buf ofs in
       let x = Int32.add a d in
-      nj_putint32 sec.sec_buf ofs x
+      String.unsafe_set32 sec.sec_buf ofs x
   | RelocAbs64 tag ->
       let a = Addr.to_int64 (addr_of_tag tag) in
-      let d = nj_getint64 sec.sec_buf ofs in
+      let d = String.unsafe_get64 sec.sec_buf ofs in
       let x = Int64.add a d in
-      nj_putint64 sec.sec_buf ofs x
+      String.unsafe_set64 sec.sec_buf ofs x
   | RelocRel32 tag ->
       let t = addr_of_tag tag in
       let r = Addr.add_int sec.sec_addr ofs in
-      let d = Addr.of_int32 (nj_getint32 sec.sec_buf ofs) in
+      let d = Addr.of_int32 (String.unsafe_get32 sec.sec_buf ofs) in
       let x = Addr.add (Addr.sub t r) d in
-      nj_putint32 sec.sec_buf ofs (Addr.to_int32 x)
+      String.unsafe_set32 sec.sec_buf ofs (Addr.to_int32 x)
 
 (* Data types *)
 
@@ -192,7 +200,7 @@ let jit_int16 n =
   let sec = !curr_sec in
   let pos = sec.sec_pos in
   grow_section sec (pos + 2);
-  nj_putint16 sec.sec_buf pos n
+  String.unsafe_set16 sec.sec_buf pos n
 
 let jit_int16n n =
   jit_int16 (Nativeint.to_int n)
@@ -201,7 +209,7 @@ let jit_int32l n =
   let sec = !curr_sec in
   let pos = sec.sec_pos in
   grow_section sec (pos + 4);
-  nj_putint32 sec.sec_buf pos n
+  String.unsafe_set32 sec.sec_buf pos n
 
 let jit_int32 n =
   jit_int32l (Int32.of_int n)
@@ -213,7 +221,7 @@ let jit_int64L n =
   let sec = !curr_sec in
   let pos = sec.sec_pos in
   grow_section sec (pos + 8);
-  nj_putint64 sec.sec_buf pos n
+  String.unsafe_set64 sec.sec_buf pos n
 
 let jit_int64 n =
   jit_int64L (Int64.of_int n)

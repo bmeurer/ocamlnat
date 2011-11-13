@@ -2,7 +2,7 @@
 <src/*/*.ml{,i}>: pkg_dynlink, pkg_findlib
 
 # OASIS_START
-# DO NOT EDIT (digest: 319604054856491a87bb2d6dc81fccc0)
+# DO NOT EDIT (digest: 71d64ba923e8e0ebd5b071e1bcb487de)
 # Executable test
 <tests/test.{native,byte}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_oUnit
@@ -14,4 +14,6 @@
 <src/*.ml{,i}>: pkg_dynlink
 "src/jitcomp/natjit.c": pkg_findlib
 "src/jitcomp/natjit.c": pkg_dynlink
+"src/jitcomp/natstr.c": pkg_findlib
+"src/jitcomp/natstr.c": pkg_dynlink
 # OASIS_STOP
