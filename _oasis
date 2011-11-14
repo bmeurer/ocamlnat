@@ -39,7 +39,7 @@ XStdFilesREADMEFileName:  README
 Executable ocamlnat
   Path: src
   MainIs: ocamlnat.ml
-  CSources: jitrun/jit.c, jitrun/str.c
+  CSources: jitrun/camlnat.h, jitrun/jit.c, jitrun/str.c
   BuildDepends: dynlink, findlib (>= 1.2.7)
   CompiledObject: native
 

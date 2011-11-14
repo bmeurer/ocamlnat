@@ -12,13 +12,7 @@
 
 /* String functions for the native toplevel */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <caml/alloc.h>
-#include <caml/callback.h>
-#include <caml/fail.h>
-#include <caml/memory.h>
+#include "camlnat.h"
 
 value camlnat_str_get16(value str, value ofs)
 {
