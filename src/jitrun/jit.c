@@ -69,12 +69,6 @@ static void *getsym(char *module, char *name){
 
 #if defined(OS_Unix)
 
-#include <sys/types.h>
-#include <sys/mman.h>
-#ifdef HAS_UNISTD
-# include <unistd.h>
-#endif
-
 #define PROT_RW  (PROT_READ | PROT_WRITE)
 #define PROT_RWX (PROT_EXEC | PROT_RW)
 
@@ -83,8 +77,6 @@ static void *mmap_p(mlsize_t size, int prot){
 }
 
 #elif defined(OS_Win32)
-
-#include <windows.h>
 
 #define PROT_RW  PAGE_READWRITE
 #define PROT_RWX PAGE_EXECUTE_READWRITE

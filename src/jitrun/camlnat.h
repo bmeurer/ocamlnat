@@ -13,13 +13,23 @@
 #ifndef CAMLNAT_H
 #define CAMLNAT_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <caml/alloc.h>
 #include <caml/callback.h>
 #include <caml/fail.h>
 #include <caml/memory.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef OS_Unix
+# include <sys/types.h>
+# include <sys/mman.h>
+#endif
+#ifdef HAS_UNISTD
+# include <unistd.h>
+#endif
+#ifdef OS_Win32
+# include <windows.h>
+#endif
 
 /* Externals */
 
