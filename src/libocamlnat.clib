@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3891b41afffc1fc04611a6bbcc4a35e2)
-jitcomp/natjit.o
-jitcomp/natstr.o
+# DO NOT EDIT (digest: 506c9edff96e943053d7c2e140e03e0b)
+jitrun/jit.o
+jitrun/str.o
 # OASIS_STOP
