@@ -14,123 +14,109 @@
 
 #include "camlnat.h"
 
+static inline unsigned unaligned_get16(const unsigned char *p)
+{
+#if defined(ARCH_BIG_ENDIAN)
+  return (unsigned)p[0] << 8
+       | (unsigned)p[1];
+#else
+  return (unsigned)p[0]
+       | (unsigned)p[1] << 8;
+#endif
+}
+
+static inline uint32 unaligned_get32(const unsigned char *p)
+{
+#if defined(TARGET_amd64) || defined(TARGET_i386)
+  return *(const uint32 *)p;
+#elif defined(ARCH_BIG_ENDIAN)
+  return (uint32)unaligned_get16(&p[0]) << 16
+       | (uint32)unaligned_get16(&p[2]);
+#else
+  return (uint32)unaligned_get16(&p[0])
+       | (uint32)unaligned_get16(&p[2]) << 16;
+#endif
+}
+
+static inline uint64 unaligned_get64(const unsigned char *p)
+{
+#if defined(TARGET_amd64) || defined(TARGET_i386)
+  return *(const uint64 *)p;
+#elif defined(ARCH_BIG_ENDIAN)
+  return (uint64)unaligned_get32(&p[0]) << 32
+       | (uint64)unaligned_get32(&p[4]);
+#else
+  return (uint64)unaligned_get32(&p[0])
+       | (uint64)unaligned_get32(&p[4]) << 32;
+#endif
+}
+
+static inline void unaligned_set16(unsigned char *p, unsigned x)
+{
+#if defined(ARCH_BIG_ENDIAN)
+  *p++ = x >> 8;
+  *p++ = x;
+#else
+  *p++ = x;
+  *p++ = x >> 8;
+#endif
+}
+
+static inline void unaligned_set32(unsigned char *p, uint32 x)
+{
+#if defined(TARGET_amd64) || defined(TARGET_i386)
+  *(uint32 *)p = x;
+#elif defined(ARCH_BIG_ENDIAN)
+  unaligned_set16(&p[0], x >> 16);
+  unaligned_set16(&p[2], x);
+#else
+  unaligned_set16(&p[0], x);
+  unaligned_set16(&p[2], x >> 16);
+#endif
+}
+
+static inline void unaligned_set64(unsigned char *p, uint64 x)
+{
+#if defined(TARGET_amd64) || defined(TARGET_i386)
+  *(uint64 *)p = x;
+#elif defined(ARCH_BIG_ENDIAN)
+  unaligned_set32(&p[0], x >> 32);
+  unaligned_set32(&p[4], x);
+#else
+  unaligned_set32(&p[0], x);
+  unaligned_set32(&p[4], x >> 32);
+#endif
+}
+
 value camlnat_str_get16(value str, value ofs)
 {
-  unsigned char *p = &Byte_u(str, Long_val(ofs));
-#if defined(ARCH_BIG_ENDIAN)
-  unsigned x = (unsigned)p[0] << 8
-             | (unsigned)p[1];
-#else
-  unsigned x = (unsigned)p[0]
-             | (unsigned)p[1] << 8;
-#endif
-  return Val_long(x);
+  return Val_long(unaligned_get16(&Byte_u(str, Long_val(ofs))));
 }
 
 value camlnat_str_get32(value str, value ofs)
 {
-  unsigned char *p = &Byte_u(str, Long_val(ofs));
-#if defined(TARGET_amd64) || defined(TARGET_i386)
-  uint32 x = *(const uint32 *)p;
-#elif defined(ARCH_BIG_ENDIAN)
-  uint32 x = (uint32)p[0] << 24
-           | (uint32)p[1] << 16
-           | (uint32)p[2] << 8
-           | (uint32)p[3];
-#else
-  uint32 x = (uint32)p[0]
-           | (uint32)p[1] << 8
-           | (uint32)p[2] << 16
-           | (uint32)p[3] << 24;
-#endif
-  return caml_copy_int32(x);
+  return caml_copy_int32(unaligned_get32(&Byte_u(str, Long_val(ofs))));
 }
 
 value camlnat_str_get64(value str, value ofs)
 {
-  unsigned char *p = &Byte_u(str, Long_val(ofs));
-#if defined(TARGET_amd64) || defined(TARGET_i386)
-  uint64 x = *(const uint64 *)p;
-#elif defined(ARCH_BIG_ENDIAN)
-  uint64 x = (uint64)p[0] << 56
-           | (uint64)p[1] << 48
-           | (uint64)p[2] << 40
-           | (uint64)p[3] << 32
-           | (uint64)p[4] << 24
-           | (uint64)p[5] << 16
-           | (uint64)p[6] << 8
-           | (uint64)p[7];
-#else
-  uint64 x = (uint64)p[0]
-           | (uint64)p[1] << 8
-           | (uint64)p[2] << 16
-           | (uint64)p[3] << 24
-           | (uint64)p[4] << 32
-           | (uint64)p[5] << 40
-           | (uint64)p[6] << 48
-           | (uint64)p[7] << 56;
-#endif
-  return caml_copy_int64(x);
+  return caml_copy_int64(unaligned_get64(&Byte_u(str, Long_val(ofs))));
 }
 
 value camlnat_str_set16(value str, value ofs, value val)
 {
-  unsigned char *p = &Byte_u(str, Long_val(ofs));
-  unsigned x = Long_val(val);
-#if defined(ARCH_BIG_ENDIAN)
-  *p++ = x >> 8;
-  *p++ = x;
-#else
-  *p++ = x;
-  *p++ = x >> 8;
-#endif
+  unaligned_set16(&Byte_u(str, Long_val(ofs)), Long_val(val));
   return Val_unit;
 }
 
 value camlnat_str_set32(value str, value ofs, value val)
 {
-  unsigned char *p = &Byte_u(str, Long_val(ofs));
-  uint32 x = Int32_val(val);
-#if defined(TARGET_amd64) || defined(TARGET_i386)
-  *(uint32 *)p = x;
-#elif defined(ARCH_BIG_ENDIAN)
-  *p++ = x >> 24;
-  *p++ = x >> 16;
-  *p++ = x >> 8;
-  *p++ = x;
-#else
-  *p++ = x;
-  *p++ = x >> 8;
-  *p++ = x >> 16;
-  *p++ = x >> 24;
-#endif
+  unaligned_set32(&Byte_u(str, Long_val(ofs)), Int32_val(val));
   return Val_unit;
 }
 
 value camlnat_str_set64(value str, value ofs, value val)
 {
-  unsigned char *p = &Byte_u(str, Long_val(ofs));
-  uint64 x = Int64_val(val);
-#if defined(TARGET_amd64) || defined(TARGET_i386)
-  *(uint64 *)p = x;
-#elif defined(ARCH_BIG_ENDIAN)
-  *p++ = x >> 56;
-  *p++ = x >> 48;
-  *p++ = x >> 40;
-  *p++ = x >> 32;
-  *p++ = x >> 24;
-  *p++ = x >> 16;
-  *p++ = x >> 8;
-  *p++ = x;
-#else
-  *p++ = x;
-  *p++ = x >> 8;
-  *p++ = x >> 16;
-  *p++ = x >> 24;
-  *p++ = x >> 32;
-  *p++ = x >> 40;
-  *p++ = x >> 48;
-  *p++ = x >> 56;
-#endif
+  unaligned_set64(&Byte_u(str, Long_val(ofs)), Int64_val(val));
   return Val_unit;
 }
