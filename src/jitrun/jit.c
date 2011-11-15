@@ -1,6 +1,6 @@
 /***********************************************************************/
 /*                                                                     */
-/*                           Objective Caml                            */
+/*                              ocamlnat                               */
 /*                                                                     */
 /*                  Benedikt Meurer, University of Siegen              */
 /*                 Marcell Fischbach, University of Siegen             */
