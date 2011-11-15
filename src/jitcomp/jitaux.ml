@@ -156,9 +156,9 @@ external jit_label_tag: label -> tag = "%identity"
 (* Relocations *)
 
 type reloc =
-    RelocAbs32 of tag (* 32bit absolute *)
-  | RelocAbs64 of tag (* 64bit absolute *)
-  | RelocRel32 of tag (* 32bit relative *)
+    R_ABS_32 of tag (* 32bit absolute *)
+  | R_ABS_64 of tag (* 64bit absolute *)
+  | R_REL_32 of tag (* 32bit relative *)
 
 let relocs = ref ([] : (section * int * reloc) list)
 
@@ -168,17 +168,17 @@ let jit_reloc reloc =
 
 let patch_reloc (sec, ofs, rel) =
   match rel with
-    RelocAbs32 tag ->
+    R_ABS_32 tag ->
       let a = Addr.to_int32 (addr_of_tag tag) in
       let d = String.unsafe_get32 sec.sec_buf ofs in
       let x = Int32.add a d in
       String.unsafe_set32 sec.sec_buf ofs x
-  | RelocAbs64 tag ->
+  | R_ABS_64 tag ->
       let a = Addr.to_int64 (addr_of_tag tag) in
       let d = String.unsafe_get64 sec.sec_buf ofs in
       let x = Int64.add a d in
       String.unsafe_set64 sec.sec_buf ofs x
-  | RelocRel32 tag ->
+  | R_REL_32 tag ->
       let t = addr_of_tag tag in
       let r = Addr.add_int sec.sec_addr ofs in
       let d = Addr.of_int32 (String.unsafe_get32 sec.sec_buf ofs) in
@@ -281,19 +281,19 @@ let data l =
       | Csymbol_address s ->
           let tag = jit_symbol_tag s in
           if Arch.size_addr == 4 then begin
-            jit_reloc (RelocAbs32 tag);
+            jit_reloc (R_ABS_32 tag);
             jit_int32l 0l
           end else begin
-            jit_reloc (RelocAbs64 tag);
+            jit_reloc (R_ABS_64 tag);
             jit_int64L 0L
           end
       | Clabel_address lbl ->
           let tag = jit_label_tag (100000 + lbl) in
           if Arch.size_addr == 4 then begin
-            jit_reloc (RelocAbs32 tag);
+            jit_reloc (R_ABS_32 tag);
             jit_int32l 0l
           end else begin
-            jit_reloc (RelocAbs64 tag);
+            jit_reloc (R_ABS_64 tag);
             jit_int64L 0L
           end
       | Cstring s ->
@@ -328,11 +328,11 @@ let efa =
   { efa_label = if Arch.size_addr == 4
                 then (fun lbl ->
                         (* .long lbl *)
-                        jit_reloc (RelocAbs32(jit_label_tag lbl));
+                        jit_reloc (R_ABS_32(jit_label_tag lbl));
                         jit_int32l 0l)
                 else (fun lbl ->
                         (* .quad lbl *)
-                        jit_reloc (RelocAbs64(jit_label_tag lbl));
+                        jit_reloc (R_ABS_64(jit_label_tag lbl));
                         jit_int64L 0L);
     efa_16 = jit_int16;
     efa_32 = jit_int32l;
@@ -340,7 +340,7 @@ let efa =
     efa_align = jit_align 0;
     efa_label_rel = (fun lbl ofs ->
                        (* .long lbl - . + ofs *)
-                       jit_reloc (RelocRel32(jit_label_tag lbl));
+                       jit_reloc (R_REL_32(jit_label_tag lbl));
                        jit_int32l ofs);
     efa_def_label = jit_label;
     efa_string = jit_asciz }
