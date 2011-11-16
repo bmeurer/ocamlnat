@@ -939,19 +939,19 @@ let emit_instr fallthrough i =
             jit_jz_label lbl
         end
     | Lcondbranch3(lbl0, lbl1, lbl2) ->
-            jit_cmpq (Immediate 1) (emit_reg i.arg.(0));
-            begin match lbl0 with
-              None -> ()
-            | Some lbl -> jit_jb_label lbl
-            end;
-            begin match lbl1 with
-              None -> ()
-            | Some lbl -> jit_jz_label lbl
-            end;
-            begin match lbl2 with
-              None -> ()
-            | Some lbl -> jit_jnle_label lbl
-            end
+        jit_cmpq (Immediate 1) (emit_reg i.arg.(0));
+        begin match lbl0 with
+          None -> ()
+        | Some lbl -> jit_jb_label lbl
+        end;
+        begin match lbl1 with
+          None -> ()
+        | Some lbl -> jit_jz_label lbl
+        end;
+        begin match lbl2 with
+          None -> ()
+        | Some lbl -> jit_jnle_label lbl
+        end
     | Lswitch jumptbl ->
         let lbl = new_label() in
         (* rax and rdx are clobbered by the Lswitch,
