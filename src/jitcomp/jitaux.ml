@@ -156,9 +156,10 @@ external jit_label_tag: label -> tag = "%identity"
 (* Relocations *)
 
 type reloc =
-    R_ABS_32 of tag (* 32bit absolute *)
-  | R_ABS_64 of tag (* 64bit absolute *)
-  | R_REL_32 of tag (* 32bit relative *)
+    R_ABS_32 of tag     (* 32bit absolute *)
+  | R_ABS_64 of tag     (* 64bit absolute *)
+  | R_REL_32 of tag     (* 32bit relative *)
+  | R_ARM_JMP_24 of tag (* ARM B/BL offsets *)
 
 let relocs = ref ([] : (section * int * reloc) list)
 
@@ -184,6 +185,21 @@ let patch_reloc (sec, ofs, rel) =
       let d = Addr.of_int32 (String.unsafe_get32 sec.sec_buf ofs) in
       let x = Addr.add (Addr.sub t r) d in
       String.unsafe_set32 sec.sec_buf ofs (Addr.to_int32 x)
+  | R_ARM_JMP_24 tag -> (* ((S + A) | T) – P *)
+      let s = addr_of_tag tag in
+      let p = Addr.add_int sec.sec_addr ofs in
+      let i = String.unsafe_get32 sec.sec_buf ofs in
+      let a = (Int32.to_int i) lsl 2 in
+      let a = if (a land 0x2000000) == 0 (* sign extend *)
+              then a land 0x3fffffc
+              else a lor 0x7c000000 in
+      let x = Addr.sub (Addr.add_int s a) p in
+      let i = Int32.logor
+                (Int32.logand i 0xff000000l)
+                (Addr.to_int32 (Addr.logand
+                                 (Addr.shift_right x 2)
+                                 0xffffffn)) in
+      String.unsafe_set32 sec.sec_buf ofs i
 
 (* Data types *)
 

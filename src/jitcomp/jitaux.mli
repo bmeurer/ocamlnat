@@ -35,9 +35,10 @@ val jit_symbol_tag: string -> tag
 external jit_label_tag: label -> tag = "%identity"
 
 type reloc =
-    R_ABS_32 of tag (* 32bit absolute *)
-  | R_ABS_64 of tag (* 64bit absolute *)
-  | R_REL_32 of tag (* 32bit relative *)
+    R_ABS_32 of tag     (* 32bit absolute *)
+  | R_ABS_64 of tag     (* 64bit absolute *)
+  | R_REL_32 of tag     (* 32bit relative *)
+  | R_ARM_JMP_24 of tag (* ARM B/BL offsets *)
 val jit_reloc: reloc -> unit
 
 val jit_int8: int -> unit
