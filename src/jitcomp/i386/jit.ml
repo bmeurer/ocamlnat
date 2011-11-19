@@ -156,14 +156,14 @@ let jit_mod_rm_reg opcodes rm reg =
       (* absolute addressing *)
       jit_opcodes opcodes;
       jit_modrm 0b00 0b101 reg;
-      jit_reloc (RelocAbs32 tag);
+      jit_reloc (R_ABS_32 tag);
       jit_int32 disp
   | MemoryTag(ireg, scale, disp, tag) ->
       (* absolute addressing plus scaled index *)
       jit_opcodes opcodes;
       jit_modrm 0b00 0b100 reg;
       jit_sib scale ireg 0b101;
-      jit_reloc (RelocAbs32 tag);
+      jit_reloc (R_ABS_32 tag);
       jit_int32 disp
   | _ ->
       assert false
@@ -214,7 +214,7 @@ let jit_movl src dst =
       jit_int32n n
   | ImmediateTag tag, rm ->
       jit_mod_rm_reg 0xc7 rm 0;
-      jit_reloc (RelocAbs32 tag);
+      jit_reloc (R_ABS_32 tag);
       jit_int32l 0l
   | rm, Register reg ->
       jit_mod_rm_reg 0x8b rm reg
@@ -314,7 +314,7 @@ let jit_jmpl dst =
 
 let jit_jmp_tag tag =
   jit_int8 0xe9;
-  jit_reloc (RelocRel32 tag);
+  jit_reloc (R_REL_32 tag);
   jit_int32l (-4l)
 
 let jit_jmp_label lbl =
@@ -328,7 +328,7 @@ let jit_calll dst =
 
 let jit_call_tag tag =
   jit_int8 0xe8;
-  jit_reloc (RelocRel32 tag);
+  jit_reloc (R_REL_32 tag);
   jit_int32l (-4l)
 
 let jit_call_label lbl =
@@ -349,7 +349,7 @@ let jit_pushl = function
       jit_int32n n
   | ImmediateTag tag ->
       jit_int8 0x68;
-      jit_reloc (RelocAbs32 tag);
+      jit_reloc (R_ABS_32 tag);
       jit_int32l 0l
   | Register reg ->
       jit_int8 (0x50 + reg)
@@ -377,7 +377,7 @@ external int_of_cc: cc -> int = "%identity"
 let jit_jcc_label cc lbl =
   jit_int8 0x0f;
   jit_int8 (0x80 + (int_of_cc cc));
-  jit_reloc (RelocRel32(jit_label_tag lbl));
+  jit_reloc (R_REL_32(jit_label_tag lbl));
   jit_int32l (-4l)
 
 let jit_jb_label   lbl = jit_jcc_label B   lbl
@@ -1103,7 +1103,7 @@ let emit_instr fallthrough i =
         jit_align 0 4;
         jit_label lbl;
         for i = 0 to Array.length jumptbl - 1 do
-          jit_reloc (RelocAbs32(jit_label_tag jumptbl.(i)));
+          jit_reloc (R_ABS_32(jit_label_tag jumptbl.(i)));
           jit_int32l 0l
         done;
         jit_text()
