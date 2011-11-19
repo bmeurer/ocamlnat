@@ -179,7 +179,7 @@ let jit_mod_rm_reg rex opcodes rm reg =
       jit_rex rex reg 0 0;
       jit_opcodes opcodes;
       jit_modrm 0b00 0b101 reg;
-      jit_reloc (RelocRel32 tag);
+      jit_reloc (R_REL_32 tag);
       jit_int32l (-4l)
   | _ ->
       assert false
@@ -366,7 +366,7 @@ let jit_jmpq dst =
 
 let jit_jmp_tag tag =
   jit_int8 0xe9;
-  jit_reloc (RelocRel32 tag);
+  jit_reloc (R_REL_32 tag);
   jit_int32l (-4l)
 
 let jit_jmp_label lbl =
@@ -388,7 +388,7 @@ let jit_callq dst =
 
 let jit_call_tag tag =
   jit_int8 0xe8;
-  jit_reloc (RelocRel32 tag);
+  jit_reloc (R_REL_32 tag);
   jit_int32l (-4l)
 
 let jit_call_label lbl =
@@ -436,8 +436,9 @@ type cc =
 external int_of_cc: cc -> int = "%identity"
 
 let jit_jcc_label cc lbl =
-  jit_int8 0x0f; jit_int8 (0x80 + (int_of_cc cc));
-  jit_reloc (RelocRel32(jit_label_tag lbl));
+  jit_int8 0x0f;
+  jit_int8 (0x80 + (int_of_cc cc));
+  jit_reloc (R_REL_32(jit_label_tag lbl));
   jit_int32l (-4l)
 
 let jit_jb_label   lbl = jit_jcc_label B   lbl
@@ -972,7 +973,7 @@ let emit_instr fallthrough i =
         jit_label lbl;
         for i = 0 to Array.length jumptbl - 1 do
           (* .long jumptbl.(i) - lbl *)
-          jit_reloc (RelocRel32(jit_label_tag jumptbl.(i)));
+          jit_reloc (R_REL_32(jit_label_tag jumptbl.(i)));
           jit_int32 (4 * i)
         done;
         jit_text()
@@ -1054,7 +1055,7 @@ let end_assembly() =
   (* Output the external address table *)
   List.iter (fun (sym, lbl) ->
                jit_label lbl;
-               jit_reloc (RelocAbs64(jit_symbol_tag sym));
+               jit_reloc (R_ABS_64(jit_symbol_tag sym));
                jit_int64L 0L) !externals;
   (* Emit floating point constants *)
   List.iter emit_float_constant !float_constants;
