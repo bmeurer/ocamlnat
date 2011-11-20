@@ -501,6 +501,10 @@ flag ["compile"; "c"]
      A"-ccopt"; A("-DSYS_" ^ system);
      A"-ccopt"; A("-DTARGET_" ^ arch)]);;
 
+(* OCaml compiler flags *)
+flag ["compile"; "ocaml"; "native"]
+  (S[A"-nodynlink"]);;
+
 (* Choose the right machine-dependent files *)
 
 let mk_arch_rule ~dir ~src ~dst =
