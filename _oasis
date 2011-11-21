@@ -36,10 +36,18 @@ XStdFilesAUTHORSFileName: AUTHORS
 XStdFilesINSTALLFileName: INSTALL
 XStdFilesREADMEFileName:  README
 
+Flag final
+  Default: true
+  Description: Toggle final/debug configuration
+
 Executable ocamlnat
   Path: src
   MainIs: ocamlnat.ml
   CSources: jitrun/camlnat.h, jitrun/jit.c, jitrun/str.c
+  if flag(final)
+    CCOpt: -DNDEBUG
+    ByteOpt: -noassert -unsafe
+    NativeOpt: -noassert -nodynlink -unsafe
   BuildDepends: dynlink, findlib (>= 1.2.7)
   CompiledObject: native
 
