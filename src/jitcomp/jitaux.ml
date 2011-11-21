@@ -75,6 +75,7 @@ let grow_section sec pos =
   let len = String.length sec.sec_buf in
   if pos > len then begin
     let buf = String.create (len * 2) in
+    assert ((String.length buf) mod 1024 == 0);
     String.unsafe_blit sec.sec_buf 0 buf 0 pos;
     sec.sec_buf <- buf
   end;
