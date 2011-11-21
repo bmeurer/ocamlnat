@@ -36,12 +36,12 @@ module String =
 struct
   include String
 
-  external unsafe_get16: string -> int -> int = "camlnat_str_get16" "noalloc"
-  external unsafe_get32: string -> int -> int32 = "camlnat_str_get32"
-  external unsafe_get64: string -> int -> int64 = "camlnat_str_get64"
-  external unsafe_set16: string -> int -> int -> unit = "camlnat_str_set16" "noalloc"
-  external unsafe_set32: string -> int -> int32 -> unit = "camlnat_str_set32" "noalloc"
-  external unsafe_set64: string -> int -> int64 -> unit = "camlnat_str_set64" "noalloc"
+  external unsafe_get16: t -> int -> int = "camlnat_str_get16" "noalloc"
+  external unsafe_get32: t -> int -> int32 = "camlnat_str_get32"
+  external unsafe_get64: t -> int -> int64 = "camlnat_str_get64"
+  external unsafe_set16: t -> int -> int -> unit = "camlnat_str_set16" "noalloc"
+  external unsafe_set32: t -> int -> int32 -> unit = "camlnat_str_set32" "noalloc"
+  external unsafe_set64: t -> int -> int64 -> unit = "camlnat_str_set64" "noalloc"
 end
 
 external nj_execsym: string -> Obj.t = "camlnat_jit_execsym"
