@@ -13,6 +13,7 @@
 #ifndef CAMLNAT_H
 #define CAMLNAT_H
 
+#include <assert.h>
 #include <caml/alloc.h>
 #include <caml/callback.h>
 #include <caml/fail.h>
