@@ -36,32 +36,47 @@ module String =
 struct
   include String
 
-  external unsafe_get16: string -> int -> int = "camlnat_str_get16" "noalloc"
-  external unsafe_get32: string -> int -> int32 = "camlnat_str_get32"
-  external unsafe_get64: string -> int -> int64 = "camlnat_str_get64"
-  external unsafe_set16: string -> int -> int -> unit = "camlnat_str_set16" "noalloc"
-  external unsafe_set32: string -> int -> int32 -> unit = "camlnat_str_set32" "noalloc"
-  external unsafe_set64: string -> int -> int64 -> unit = "camlnat_str_set64" "noalloc"
+  external unsafe_get16: t -> int -> int = "camlnat_str_get16" "noalloc"
+  external unsafe_get32: t -> int -> int32 = "camlnat_str_get32"
+  external unsafe_get64: t -> int -> int64 = "camlnat_str_get64"
+  external unsafe_set16: t -> int -> int -> unit = "camlnat_str_set16" "noalloc"
+  external unsafe_set32: t -> int -> int32 -> unit = "camlnat_str_set32" "noalloc"
+  external unsafe_set64: t -> int -> int64 -> unit = "camlnat_str_set64" "noalloc"
 end
 
-external nj_execsym: string -> Obj.t = "camlnat_jit_execsym"
-external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
-external nj_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
-external nj_getsym: string -> Addr.t = "camlnat_jit_getsym"
+(* Memory management *)
 
-external nj_malloc: int -> int -> Addr.t * Addr.t = "camlnat_jit_malloc"
-external nj_memcpy: Addr.t -> string -> int -> unit = "camlnat_jit_memcpy" "noalloc"
+module Memory =
+struct
+  type t = Addr.t
+
+  external reserve: int -> t = "camlnat_mem_reserve"
+  external prepare: t -> string -> int -> unit = "camlnat_mem_prepare" "noalloc"
+  external commit: t -> int -> unit = "camlnat_mem_commit"
+end
+
+(* Symbol management *)
+
+module Symbol =
+struct
+  type t = string
+
+  external exec: t -> Obj.t = "camlnat_sym_exec"
+  external load: t -> Obj.t = "camlnat_sym_load"
+  external add: t -> Addr.t -> unit = "camlnat_sym_add" "noalloc"
+  external get: t -> Addr.t = "camlnat_sym_get"
+end
 
 (* Execution *)
 
 type evaluation_outcome = Result of Obj.t | Exception of exn
 
 let jit_execsym sym =
-  try Result(nj_execsym sym)
+  try Result(Symbol.exec sym)
   with exn -> Exception exn
 
 let jit_loadsym sym =
-  try nj_loadsym sym
+  try Symbol.load sym
   with Failure s -> raise (Error(Undefined_global s))
 
 (* Sections *)
@@ -75,6 +90,7 @@ let grow_section sec pos =
   let len = String.length sec.sec_buf in
   if pos > len then begin
     let buf = String.create (len * 2) in
+    assert ((String.length buf) mod 1024 == 0);
     String.unsafe_blit sec.sec_buf 0 buf 0 pos;
     sec.sec_buf <- buf
   end;
@@ -114,7 +130,7 @@ let addr_of_symbol sym =
   with
     Not_found ->
       (* Fallback to the global symbol table *)
-      try nj_getsym sym
+      try Symbol.get sym
       with Failure s -> raise (Error(Undefined_global s))
 
 let symbol_name sym =
@@ -170,9 +186,11 @@ let jit_reloc reloc =
 let patch_reloc (sec, ofs, rel) =
   match rel with
     R_ABS_32 tag ->
-      let a = Addr.to_int32 (addr_of_tag tag) in
+      let a = addr_of_tag tag in
+      assert (a >= -2147483648n);
+      assert (a <= 2147483647n);
       let d = String.unsafe_get32 sec.sec_buf ofs in
-      let x = Int32.add a d in
+      let x = Int32.add (Addr.to_int32 a) d in
       String.unsafe_set32 sec.sec_buf ofs x
   | R_ABS_64 tag ->
       let a = Addr.to_int64 (addr_of_tag tag) in
@@ -184,6 +202,8 @@ let patch_reloc (sec, ofs, rel) =
       let r = Addr.add_int sec.sec_addr ofs in
       let d = Addr.of_int32 (String.unsafe_get32 sec.sec_buf ofs) in
       let x = Addr.add (Addr.sub t r) d in
+      assert (x >= -2147483648n);
+      assert (x <= 2147483647n);
       String.unsafe_set32 sec.sec_buf ofs (Addr.to_int32 x)
   | R_ARM_JMP_24 tag -> (* ((S + A) | T) – P *)
       let s = addr_of_tag tag in
@@ -376,16 +396,26 @@ let end_assembly() =
   jit_global sym;
   jit_symbol sym;
   emit_frames efa;
-  (* Allocate memory to sections *)
-  let (text, data) = nj_malloc text_sec.sec_pos data_sec.sec_pos in
-  text_sec.sec_addr <- text;
-  data_sec.sec_addr <- data;
+  (* Pad sections to 64-byte boundaries to avoid having code
+     and data on a single (64-byte) cache line (cf. "Software
+     Optimization Guide for the AMD64 Processor"). This is
+     safe since the section buffer length is always a multiple
+     of 1K. *)
+  text_sec.sec_pos <- (text_sec.sec_pos + 63) land (-64);
+  data_sec.sec_pos <- (data_sec.sec_pos + 63) land (-64);
+  assert ((text_sec.sec_pos mod 64) == 0);
+  assert ((data_sec.sec_pos mod 64) == 0);
+  (* Reserve memory for the sections *)
+  text_sec.sec_addr <- Memory.reserve (text_sec.sec_pos + data_sec.sec_pos);
+  data_sec.sec_addr <- Addr.add_int text_sec.sec_addr text_sec.sec_pos;
   (* Patch all relocations *)
   List.iter patch_reloc !relocs;
-  (* Copy section contents *)
-  nj_memcpy text_sec.sec_addr text_sec.sec_buf text_sec.sec_pos;
-  nj_memcpy data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
+  (* Prepare section content *)
+  Memory.prepare text_sec.sec_addr text_sec.sec_buf text_sec.sec_pos;
+  Memory.prepare data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
   (* Register global symbols *)
   List.iter
-    (fun sym -> nj_addsym sym (addr_of_symbol sym))
-    !globals
+    (fun sym -> Symbol.add sym (addr_of_symbol sym))
+    !globals;
+  (* Commit memory *)
+  Memory.commit text_sec.sec_addr (text_sec.sec_pos + data_sec.sec_pos)

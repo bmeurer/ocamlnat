@@ -90,33 +90,74 @@ static inline void unaligned_set64(unsigned char *p, uint64 x)
 
 value camlnat_str_get16(value str, value ofs)
 {
+  assert(Is_long(ofs));
+  assert(Is_block(str));
+  assert(Long_val(ofs) >= 0);
+  assert(Tag_val(str) == String_tag);
+  assert(Long_val(ofs) < caml_string_length(str));
+
   return Val_long(unaligned_get16(&Byte_u(str, Long_val(ofs))));
 }
 
 value camlnat_str_get32(value str, value ofs)
 {
+  assert(Is_long(ofs));
+  assert(Is_block(str));
+  assert(Long_val(ofs) >= 0);
+  assert(Tag_val(str) == String_tag);
+  assert(Long_val(ofs) < caml_string_length(str));
+
   return caml_copy_int32(unaligned_get32(&Byte_u(str, Long_val(ofs))));
 }
 
 value camlnat_str_get64(value str, value ofs)
 {
+  assert(Is_long(ofs));
+  assert(Is_block(str));
+  assert(Long_val(ofs) >= 0);
+  assert(Tag_val(str) == String_tag);
+  assert(Long_val(ofs) < caml_string_length(str));
+
   return caml_copy_int64(unaligned_get64(&Byte_u(str, Long_val(ofs))));
 }
 
 value camlnat_str_set16(value str, value ofs, value val)
 {
+  assert(Is_long(ofs));
+  assert(Is_long(val));
+  assert(Is_block(str));
+  assert(Long_val(ofs) >= 0);
+  assert(Tag_val(str) == String_tag);
+  assert(Long_val(ofs) < caml_string_length(str));
+
   unaligned_set16(&Byte_u(str, Long_val(ofs)), Long_val(val));
   return Val_unit;
 }
 
 value camlnat_str_set32(value str, value ofs, value val)
 {
+  assert(Is_long(ofs));
+  assert(Is_block(str));
+  assert(Is_block(val));
+  assert(Long_val(ofs) >= 0);
+  assert(Tag_val(str) == String_tag);
+  assert(Tag_val(val) == Custom_tag);
+  assert(Long_val(ofs) < caml_string_length(str));
+
   unaligned_set32(&Byte_u(str, Long_val(ofs)), Int32_val(val));
   return Val_unit;
 }
 
 value camlnat_str_set64(value str, value ofs, value val)
 {
+  assert(Is_long(ofs));
+  assert(Is_block(str));
+  assert(Is_block(val));
+  assert(Long_val(ofs) >= 0);
+  assert(Tag_val(str) == String_tag);
+  assert(Tag_val(val) == Custom_tag);
+  assert(Long_val(ofs) < caml_string_length(str));
+
   unaligned_set64(&Byte_u(str, Long_val(ofs)), Int64_val(val));
   return Val_unit;
 }

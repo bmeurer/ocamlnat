@@ -1,5 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 506c9edff96e943053d7c2e140e03e0b)
-jitrun/jit.o
+# DO NOT EDIT (digest: a570f614a9bf57e9c669dbf0b481ce17)
+jitrun/mem.o
 jitrun/str.o
+jitrun/sym.o
 # OASIS_STOP

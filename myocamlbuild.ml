@@ -11,7 +11,7 @@
 (***********************************************************************)
 
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 0a5c5b627343dae70ccb6d09aa9e5ed3) *)
+(* DO NOT EDIT (digest: a2431ba63a5dacffcdca084374a2b4a6) *)
 module OASISGettext = struct
 # 21 "/opt/local/var/macports/build/_Users_bmeurer_Desktop_Projects_MacPorts_ports_devel_caml-oasis/caml-oasis/work/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -465,7 +465,48 @@ let package_default =
   {
      MyOCamlbuildBase.lib_ocaml = [];
      lib_c = [("ocamlnat", "src", ["src/jitrun/camlnat.h"])];
-     flags = [];
+     flags =
+       [
+          (["oasis_executable_ocamlnat_ccopt"; "compile"],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final", S [A "-ccopt"; A "-DNDEBUG"])
+            ]);
+          (["oasis_executable_ocamlnat_byte"; "ocaml"; "link"; "byte"],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final", S [A "-noassert"; A "-unsafe"])
+            ]);
+          (["oasis_executable_ocamlnat_native"; "ocaml"; "link"; "native"],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final",
+                 S [A "-noassert"; A "-nodynlink"; A "-unsafe"])
+            ]);
+          (["oasis_executable_ocamlnat_byte"; "ocaml"; "ocamldep"; "byte"],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final", S [A "-noassert"; A "-unsafe"])
+            ]);
+          (["oasis_executable_ocamlnat_native"; "ocaml"; "ocamldep"; "native"
+           ],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final",
+                 S [A "-noassert"; A "-nodynlink"; A "-unsafe"])
+            ]);
+          (["oasis_executable_ocamlnat_byte"; "ocaml"; "compile"; "byte"],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final", S [A "-noassert"; A "-unsafe"])
+            ]);
+          (["oasis_executable_ocamlnat_native"; "ocaml"; "compile"; "native"],
+            [
+               (OASISExpr.EBool true, S []);
+               (OASISExpr.EFlag "final",
+                 S [A "-noassert"; A "-nodynlink"; A "-unsafe"])
+            ])
+       ];
      }
   ;;
 

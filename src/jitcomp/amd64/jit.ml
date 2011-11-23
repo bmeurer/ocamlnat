@@ -25,7 +25,7 @@ open Linearize
 (* Test if a symbol is local for the current unit *)
 
 let is_local_symbol sym =
-  let cun = Compilenv.current_unit_name() in
+  let cun = (Compilenv.make_symbol (Some "")) in
   try cun = (String.sub sym 0 (String.length cun))
   with Invalid_argument _ -> false
 
