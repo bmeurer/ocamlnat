@@ -3,34 +3,34 @@
 <src/*/*.ml{,i}>: oasis_executable_ocamlnat_native
 
 # OASIS_START
-# DO NOT EDIT (digest: 42d31e26470931cc26780447a9c282d2)
+# DO NOT EDIT (digest: 2128cd3c6a2bfd2a063fbc10ba6eff64)
 # Executable test
 <tests/test.{native,byte}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_oUnit
 # Executable ocamlnat
 <src/*.ml{,i}>: oasis_executable_ocamlnat_ccopt
-"src/jitrun/jit.c": oasis_executable_ocamlnat_ccopt
 "src/jitrun/mem.c": oasis_executable_ocamlnat_ccopt
 "src/jitrun/str.c": oasis_executable_ocamlnat_ccopt
+"src/jitrun/sym.c": oasis_executable_ocamlnat_ccopt
 "src/ocamlnat.native": oasis_executable_ocamlnat_byte
 <src/*.ml{,i}>: oasis_executable_ocamlnat_byte
-"src/jitrun/jit.c": oasis_executable_ocamlnat_byte
 "src/jitrun/mem.c": oasis_executable_ocamlnat_byte
 "src/jitrun/str.c": oasis_executable_ocamlnat_byte
+"src/jitrun/sym.c": oasis_executable_ocamlnat_byte
 "src/ocamlnat.native": oasis_executable_ocamlnat_native
 <src/*.ml{,i}>: oasis_executable_ocamlnat_native
-"src/jitrun/jit.c": oasis_executable_ocamlnat_native
 "src/jitrun/mem.c": oasis_executable_ocamlnat_native
 "src/jitrun/str.c": oasis_executable_ocamlnat_native
+"src/jitrun/sym.c": oasis_executable_ocamlnat_native
 "src/ocamlnat.native": use_libocamlnat
 "src/ocamlnat.native": pkg_findlib
 "src/ocamlnat.native": pkg_dynlink
 <src/*.ml{,i}>: pkg_findlib
 <src/*.ml{,i}>: pkg_dynlink
-"src/jitrun/jit.c": pkg_findlib
-"src/jitrun/jit.c": pkg_dynlink
 "src/jitrun/mem.c": pkg_findlib
 "src/jitrun/mem.c": pkg_dynlink
 "src/jitrun/str.c": pkg_findlib
 "src/jitrun/str.c": pkg_dynlink
+"src/jitrun/sym.c": pkg_findlib
+"src/jitrun/sym.c": pkg_dynlink
 # OASIS_STOP

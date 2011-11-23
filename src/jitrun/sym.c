@@ -11,7 +11,7 @@
 /*                                                                     */
 /***********************************************************************/
 
-/* JIT support for the native toplevel */
+/* Symbol management for the native toplevel */
 
 #include "camlnat.h"
 
@@ -65,7 +65,7 @@ static void *getsym(char *module, char *name){
   return addr;
 }
 
-value camlnat_jit_execsym(value symbol)
+value camlnat_sym_exec(value symbol)
 {
   CAMLparam1 (symbol);
   CAMLlocal1 (result);
@@ -101,7 +101,7 @@ value camlnat_jit_execsym(value symbol)
   CAMLreturn (result);
 }
 
-value camlnat_jit_loadsym(value symbol)
+value camlnat_sym_load(value symbol)
 {
   CAMLparam1 (symbol);
   CAMLlocal1 (sym);
@@ -111,13 +111,13 @@ value camlnat_jit_loadsym(value symbol)
   CAMLreturn(sym);
 }
 
-value camlnat_jit_addsym(value symbol, value addr)
+value camlnat_sym_add(value symbol, value addr)
 {
   addsym(String_val(symbol), (void *)Nativeint_val(addr));
   return Val_unit;
 }
 
-value camlnat_jit_getsym(value symbol)
+value camlnat_sym_get(value symbol)
 {
-  return caml_copy_nativeint((intnat)camlnat_jit_loadsym(symbol));
+  return caml_copy_nativeint((intnat)camlnat_sym_load(symbol));
 }

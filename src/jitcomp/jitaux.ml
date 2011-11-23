@@ -55,21 +55,28 @@ struct
   external commit: t -> int -> unit = "camlnat_mem_commit"
 end
 
-external nj_execsym: string -> Obj.t = "camlnat_jit_execsym"
-external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
-external nj_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
-external nj_getsym: string -> Addr.t = "camlnat_jit_getsym"
+(* Symbol management *)
+
+module Symbol =
+struct
+  type t = string
+
+  external exec: t -> Obj.t = "camlnat_sym_exec"
+  external load: t -> Obj.t = "camlnat_sym_load"
+  external add: t -> Addr.t -> unit = "camlnat_sym_add" "noalloc"
+  external get: t -> Addr.t = "camlnat_sym_get"
+end
 
 (* Execution *)
 
 type evaluation_outcome = Result of Obj.t | Exception of exn
 
 let jit_execsym sym =
-  try Result(nj_execsym sym)
+  try Result(Symbol.exec sym)
   with exn -> Exception exn
 
 let jit_loadsym sym =
-  try nj_loadsym sym
+  try Symbol.load sym
   with Failure s -> raise (Error(Undefined_global s))
 
 (* Sections *)
@@ -123,7 +130,7 @@ let addr_of_symbol sym =
   with
     Not_found ->
       (* Fallback to the global symbol table *)
-      try nj_getsym sym
+      try Symbol.get sym
       with Failure s -> raise (Error(Undefined_global s))
 
 let symbol_name sym =
@@ -392,7 +399,7 @@ let end_assembly() =
   Memory.prepare data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
   (* Register global symbols *)
   List.iter
-    (fun sym -> nj_addsym sym (addr_of_symbol sym))
+    (fun sym -> Symbol.add sym (addr_of_symbol sym))
     !globals;
   (* Commit memory *)
   Memory.commit text_sec.sec_addr (text_sec.sec_pos + data_sec.sec_pos)
