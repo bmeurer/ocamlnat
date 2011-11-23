@@ -44,13 +44,21 @@ struct
   external unsafe_set64: t -> int -> int64 -> unit = "camlnat_str_set64" "noalloc"
 end
 
+(* Memory management *)
+
+module Memory =
+struct
+  type t = Addr.t
+
+  external reserve: int -> t = "camlnat_mem_reserve"
+  external prepare: t -> string -> int -> unit = "camlnat_mem_prepare" "noalloc"
+  external commit: t -> int -> unit = "camlnat_mem_commit"
+end
+
 external nj_execsym: string -> Obj.t = "camlnat_jit_execsym"
 external nj_loadsym: string -> Obj.t = "camlnat_jit_loadsym"
 external nj_addsym: string -> Addr.t -> unit = "camlnat_jit_addsym" "noalloc"
 external nj_getsym: string -> Addr.t = "camlnat_jit_getsym"
-
-external nj_malloc: int -> int -> Addr.t * Addr.t = "camlnat_jit_malloc"
-external nj_memcpy: Addr.t -> string -> int -> unit = "camlnat_jit_memcpy" "noalloc"
 
 (* Execution *)
 
@@ -365,16 +373,26 @@ let end_assembly() =
   jit_global sym;
   jit_symbol sym;
   emit_frames efa;
-  (* Allocate memory to sections *)
-  let (text, data) = nj_malloc text_sec.sec_pos data_sec.sec_pos in
-  text_sec.sec_addr <- text;
-  data_sec.sec_addr <- data;
+  (* Pad sections to 64-byte boundaries to avoid having code
+     and data on a single (64-byte) cache line (cf. "Software
+     Optimization Guide for the AMD64 Processor"). This is
+     safe since the section buffer length is always a multiple
+     of 1K. *)
+  text_sec.sec_pos <- (text_sec.sec_pos + 63) land (-64);
+  data_sec.sec_pos <- (data_sec.sec_pos + 63) land (-64);
+  assert ((text_sec.sec_pos mod 64) == 0);
+  assert ((data_sec.sec_pos mod 64) == 0);
+  (* Reserve memory for the sections *)
+  text_sec.sec_addr <- Memory.reserve (text_sec.sec_pos + data_sec.sec_pos);
+  data_sec.sec_addr <- Addr.add_int text_sec.sec_addr text_sec.sec_pos;
   (* Patch all relocations *)
   List.iter patch_reloc !relocs;
-  (* Copy section contents *)
-  nj_memcpy text_sec.sec_addr text_sec.sec_buf text_sec.sec_pos;
-  nj_memcpy data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
+  (* Prepare section content *)
+  Memory.prepare text_sec.sec_addr text_sec.sec_buf text_sec.sec_pos;
+  Memory.prepare data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
   (* Register global symbols *)
   List.iter
     (fun sym -> nj_addsym sym (addr_of_symbol sym))
-    !globals
+    !globals;
+  (* Commit memory *)
+  Memory.commit text_sec.sec_addr (text_sec.sec_pos + data_sec.sec_pos)
