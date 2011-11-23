@@ -28,29 +28,29 @@ static struct chunk *chunklist = NULL;
 static struct chunk *chunk_alloc(intnat size)
 {
   struct chunk *chunk;
-  static int pagesize = 0;
+  static int pagemask = 0;
   void *addr;
   intnat areasize;
 
   chunk = (struct chunk *)malloc(sizeof(struct chunk));
   if (chunk != NULL) {
     /* Determine the page size on-demand */
-    if (pagesize == 0) {
+    if (pagemask == 0) {
 #if defined(OS_Win32)
       SYSTEM_INFO systemInfo;
       GetSystemInfo(&systemInfo);
-      pagesize = systemInfo.dwPageSize;
+      pagemask = systemInfo.dwPageSize - 1;
 #else
-      pagesize = getpagesize();
+      pagemask = getpagesize() - 1;
 #endif
     }
 
     /* Page-align the effective size */
-    size = ((size + (pagesize - 1)) / pagesize) * pagesize;
+    size = (size + pagemask) & ~pagemask;
 
     /* Calculate the desired area size */
     if (size <= 64 * 1024)
-      areasize = 64 * 1024;
+      areasize = (64 * 1024 + pagemask) & ~pagemask;
     else if (size <= 128 * 1024)
       areasize = size * 2;
     else
