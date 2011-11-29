@@ -21,14 +21,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef OS_Unix
+#ifdef HAS_MMAP
 # include <sys/types.h>
 # include <sys/mman.h>
 #endif
 #ifdef HAS_UNISTD
 # include <unistd.h>
 #endif
-#ifdef OS_Win32
+#ifdef _WIN32
 # include <windows.h>
 #endif
 

@@ -36,7 +36,7 @@ static struct chunk *chunk_alloc(intnat size)
   if (chunk != NULL) {
     /* Determine the page size on-demand */
     if (pagemask == 0) {
-#if defined(OS_Win32)
+#if defined(_WIN32)
       SYSTEM_INFO systemInfo;
       GetSystemInfo(&systemInfo);
       pagemask = systemInfo.dwPageSize - 1;
@@ -57,7 +57,7 @@ static struct chunk *chunk_alloc(intnat size)
       areasize = size;
 
 again:
-#if defined(OS_Win32)
+#if defined(_WIN32)
     addr = VirtualAlloc(NULL, areasize,
                         MEM_COMMIT | MEM_RESERVE,
                         PAGE_EXECUTE_READWRITE);
