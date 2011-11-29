@@ -39,6 +39,7 @@ type reloc =
   | R_ABS_64 of tag     (* 64bit absolute *)
   | R_REL_32 of tag     (* 32bit relative *)
   | R_ARM_JMP_24 of tag (* ARM B/BL offsets *)
+  | R_ARM_LDR_12 of tag (* ARM LDR offsets *)
 val jit_reloc: reloc -> unit
 
 val jit_int8: int -> unit

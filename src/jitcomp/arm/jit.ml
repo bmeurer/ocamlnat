@@ -206,7 +206,13 @@ let jit_xfer ?cc:(cc=AL) rd address opcode =
                     lor 0b10000
                     lor (regindex rm)
                 | MemoryTag(tag, addend) ->
-                    (*TODO*)assert false
+                    (* r15 contains an address 8 bytes on from
+                       the address of the current instruction *)
+                    jit_reloc (R_ARM_LDR_12 tag);
+                    let addend = addend - 8 in
+                    ((regindex pc) lsl 16)
+                    lor (if addend < 0 then (-addend) else addend)
+                    lor (if addend < 0 then 0 else 0x800000)
                 | _ ->
                     assert false) in
   jit_instr ~cc opcode

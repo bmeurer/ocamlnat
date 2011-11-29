@@ -176,6 +176,7 @@ type reloc =
   | R_ABS_64 of tag     (* 64bit absolute *)
   | R_REL_32 of tag     (* 32bit relative *)
   | R_ARM_JMP_24 of tag (* ARM B/BL offsets *)
+  | R_ARM_LDR_12 of tag (* ARM LDR offsets *)
 
 let relocs = ref ([] : (section * int * reloc) list)
 
@@ -219,6 +220,25 @@ let patch_reloc (sec, ofs, rel) =
                 (Addr.to_int32 (Addr.logand
                                  (Addr.shift_right x 2)
                                  0xffffffn)) in
+      String.unsafe_set32 sec.sec_buf ofs i
+  | R_ARM_LDR_12 tag ->
+      let s = addr_of_tag tag in
+      let p = Addr.add_int sec.sec_addr ofs in
+      let i = String.unsafe_get32 sec.sec_buf ofs in
+      let a = (Int32.to_int i) land 0xfff in
+      let a = if (Int32.logand i 0x800000l) == 0l (* up/down bit *)
+              then (-a)
+              else a in
+      let x = Addr.sub (Addr.add_int s a) p in
+      let i = Int32.logor
+                (Int32.logand i 0xff7ff000l)
+                (Int32.logand
+                   (if x < 0n
+                    then Addr.to_int32 (Addr.neg x)
+                    else (Int32.logor
+                            (Addr.to_int32 x)
+                            0x800000l))
+                   0xfffl) in
       String.unsafe_set32 sec.sec_buf ofs i
 
 (* Data types *)
