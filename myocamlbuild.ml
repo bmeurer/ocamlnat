@@ -525,6 +525,11 @@ module Custom = struct
       Printf.sprintf
     in
       match e with
+      | Before_options ->
+          (* Use ocamlfind for ocamlmklib to ease cross compiling *)
+          let open MyOCamlbuildFindlib in
+          Options.ocamlmklib := ocamlfind & A"ocamlmklib"
+
       | After_rules ->
           let module M = struct
 
