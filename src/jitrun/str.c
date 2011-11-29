@@ -27,7 +27,7 @@ static inline unsigned unaligned_get16(const unsigned char *p)
 
 static inline uint32 unaligned_get32(const unsigned char *p)
 {
-#if defined(TARGET_amd64) || defined(TARGET_i386)
+#if defined(__amd64__) || defined(__i386__) || defined(__x86_64__)
   return *(const uint32 *)p;
 #elif defined(ARCH_BIG_ENDIAN)
   return (uint32)unaligned_get16(&p[0]) << 16
@@ -40,7 +40,7 @@ static inline uint32 unaligned_get32(const unsigned char *p)
 
 static inline uint64 unaligned_get64(const unsigned char *p)
 {
-#if defined(TARGET_amd64) || defined(TARGET_i386)
+#if defined(__amd64__) || defined(__i386__) || defined(__x86_64__)
   return *(const uint64 *)p;
 #elif defined(ARCH_BIG_ENDIAN)
   return (uint64)unaligned_get32(&p[0]) << 32
@@ -64,7 +64,7 @@ static inline void unaligned_set16(unsigned char *p, unsigned x)
 
 static inline void unaligned_set32(unsigned char *p, uint32 x)
 {
-#if defined(TARGET_amd64) || defined(TARGET_i386)
+#if defined(__amd64__) || defined(__i386__) || defined(__x86_64__)
   *(uint32 *)p = x;
 #elif defined(ARCH_BIG_ENDIAN)
   unaligned_set16(&p[0], x >> 16);
@@ -77,7 +77,7 @@ static inline void unaligned_set32(unsigned char *p, uint32 x)
 
 static inline void unaligned_set64(unsigned char *p, uint64 x)
 {
-#if defined(TARGET_amd64) || defined(TARGET_i386)
+#if defined(__amd64__) || defined(__i386__) || defined(__x86_64__)
   *(uint64 *)p = x;
 #elif defined(ARCH_BIG_ENDIAN)
   unaligned_set32(&p[0], x >> 32);

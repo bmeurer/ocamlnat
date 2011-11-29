@@ -531,16 +531,9 @@ module Custom = struct
 let arch = BaseEnvLight.var_get "architecture" env;;
 let ccomptype = BaseEnvLight.var_get "ccomp_type" env;;
 let os_type = BaseEnvLight.var_get "os_type" env;;
-let system = BaseEnvLight.var_get "system" env;;
 
 let windows = os_type = "Win32";;
 if windows then tag_any ["windows"];;
-
-(* C compiler flags *)
-flag ["compile"; "c"]
-  (S[A"-ccopt"; A("-DOS_" ^ os_type);
-     A"-ccopt"; A("-DSYS_" ^ system);
-     A"-ccopt"; A("-DTARGET_" ^ arch)]);;
 
 (* Choose the right machine-dependent files *)
 
