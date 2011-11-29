@@ -23,6 +23,21 @@ open Jitaux
 open Linearize
 open Emitaux
 
+module Nativeint =
+struct
+  include Nativeint
+
+  let rotate_left x y =
+    Nativeint.logor
+      (Nativeint.shift_left x y)
+      (Nativeint.shift_right x (32 - y))
+
+  let rotate_right x y =
+    Nativeint.logor
+      (Nativeint.shift_right x y)
+      (Nativeint.shift_left x (32 - y))
+end
+
 (* Instructions *)
 
 (* Condition codes *)
@@ -112,7 +127,17 @@ let jit_alu ?cc:(cc=AL) rn rd operand2 opcode =
                     assert (rm >= 0 && rm < 16);
                     rm
                 | Immediate n ->
-                    (*TODO*)assert false
+                    let rec rotate r n =
+                      assert (r >= 0 && r < 32);
+                      assert (r mod 2 == 0);
+                      let nr = Nativeint.rotate_right n r in
+                      if Nativeint.logand nr (Nativeint.lognot 0xffn) == 0n
+                      then 32 - r
+                      else rotate (r + 2) n in
+                    let r = rotate 0 n in
+                    0x2000000
+                    lor ((r lsr 2) lsl 8)
+                    lor (Nativeint.to_int (Nativeint.rotate_left n r))
                 | Shift(rm, shift, Immediate n) ->
                     assert (n >= 0n && n < 32n);
                     ((Nativeint.to_int n) lsl 7)
@@ -342,7 +367,7 @@ let instr_for_shift_intop = function
 
 let rec is_immed n shift =
   shift <= 24 &&
-  (Nativeint.logand n (Nativeint.shift_left (Nativeint.of_int 0xFF) shift) = n
+  (Nativeint.logand n (Nativeint.shift_left 0xFFn shift) = n
    || is_immed n (shift + 2))
 
 let is_immediate n = is_immed n 0
