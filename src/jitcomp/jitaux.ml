@@ -210,8 +210,7 @@ let patch_reloc (sec, ofs, rel) =
       let r = Addr.add_int sec.sec_addr ofs in
       let d = Addr.of_int32 (String.unsafe_get32 sec.sec_buf ofs) in
       let x = Addr.add (Addr.sub t r) d in
-      assert (x >= -2147483648n);
-      assert (x <= 2147483647n);
+      assert (x >= -2147483648n && x <= 2147483647n);
       String.unsafe_set32 sec.sec_buf ofs (Addr.to_int32 x)
   | R_ARM_JMP_24 tag -> (* ((S + A) | T) – P *)
       let s = addr_of_tag tag in
@@ -222,6 +221,7 @@ let patch_reloc (sec, ofs, rel) =
               then a land 0x3fffffc
               else a lor 0x7c000000 in
       let x = Addr.sub (Addr.add_int s a) p in
+      assert (x >= -33554432n && x <= 33554431n);
       let i = Int32.logor
                 (Int32.logand i 0xff000000l)
                 (Addr.to_int32 (Addr.logand
