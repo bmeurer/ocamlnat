@@ -131,12 +131,12 @@ let jit_alu ?cc:(cc=AL) rn rd operand2 opcode =
                       assert (r >= 0 && r < 32);
                       assert (r mod 2 == 0);
                       let nr = Nativeint.rotate_right n r in
-                      if Nativeint.logand nr (Nativeint.lognot 0xffn) == 0n
+                      if Nativeint.logand nr (Nativeint.lognot 0xffn) = 0n
                       then 32 - r
                       else rotate (r + 2) n in
                     let r = rotate 0 n in
                     0x2000000
-                    lor ((r lsr 2) lsl 8)
+                    lor ((r lsr 1) lsl 8)
                     lor (Nativeint.to_int (Nativeint.rotate_left n r))
                 | Shift(rm, shift, Immediate n) ->
                     assert (n >= 0n && n < 32n);
@@ -185,32 +185,35 @@ let jit_xfer ?cc:(cc=AL) rd address opcode =
            lor ((regindex rd) lsl 12)
            lor (match address with
                   Register rn ->
-                    rn lsl 16
+                    0x1000000
+                    lor (rn lsl 16)
                 | Memory(rn, Immediate n) ->
                     let x = if n < 0n then Nativeint.neg n else n in
-                    assert (x >= 0n);
-                    assert (x < 4096n);
-                    ((regindex rn) lsl 16)
+                    assert (x >= 0n && x < 4096n);
+                    0x1000000
+                    lor ((regindex rn) lsl 16)
                     lor (Nativeint.to_int x)
                     lor (if n < 0n then 0 else 0x800000)
                 | Memory(rn, Shift(rm, shift, Immediate n)) ->
-                    assert (n >= 0n && n< 32n);
-                    ((regindex rn) lsl 16)
+                    assert (n >= 0n && n < 32n);
+                    0x3000000
+                    lor ((regindex rn) lsl 16)
                     lor ((Nativeint.to_int n) lsl 7)
                     lor ((int_of_shift shift) lsl 5)
                     lor (regindex rm)
                 | Memory(rn, Shift(rm, shift, rs)) ->
-                    ((regindex rn) lsl 16)
+                    0x3000010
+                    lor ((regindex rn) lsl 16)
                     lor ((regindex rs) lsl 8)
                     lor ((int_of_shift shift) lsl 5)
-                    lor 0b10000
                     lor (regindex rm)
                 | MemoryTag(tag, addend) ->
                     (* r15 contains an address 8 bytes on from
                        the address of the current instruction *)
                     jit_reloc (R_ARM_LDR_12 tag);
                     let addend = addend - 8 in
-                    ((regindex pc) lsl 16)
+                    assert (addend >= (-4096) && addend <= 4096);
+                    0x10f0000
                     lor (if addend < 0 then (-addend) else addend)
                     lor (if addend < 0 then 0 else 0x800000)
                 | _ ->
