@@ -233,7 +233,7 @@ let patch_reloc (sec, ofs, rel) =
       let p = Addr.add_int sec.sec_addr ofs in
       let i = String.unsafe_get32 sec.sec_buf ofs in
       let a = (Int32.to_int i) land 0xfff in
-      let a = if (Int32.logand i 0x800000l) == 0l (* up/down bit *)
+      let a = if (Int32.logand i 0x800000l) = 0l (* up/down bit *)
               then (-a)
               else a in
       let x = Addr.sub (Addr.add_int s a) p in
@@ -245,7 +245,7 @@ let patch_reloc (sec, ofs, rel) =
                     else (Int32.logor
                             (Addr.to_int32 x)
                             0x800000l))
-                   0xfffl) in
+                   0x800fffl) in
       String.unsafe_set32 sec.sec_buf ofs i
 
 (* Data types *)
