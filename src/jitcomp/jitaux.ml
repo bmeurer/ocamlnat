@@ -375,11 +375,14 @@ let end_assembly() =
   jit_data();
   jit_global sym;
   jit_symbol sym;
-  let sym = (Compilenv.make_symbol (Some "frametable")) in
-  jit_int32 0;
-  jit_global sym;
-  jit_symbol sym;
-  emit_frames efa;
+  (* Emit the frametable if there are any frame descriptors *)
+  if !frame_descriptors <> [] then begin
+    let sym = (Compilenv.make_symbol (Some "frametable")) in
+    jit_int32 0;
+    jit_global sym;
+    jit_symbol sym;
+    emit_frames efa
+  end;
   (* Pad sections to 64-byte boundaries to avoid having code
      and data on a single (64-byte) cache line (cf. "Software
      Optimization Guide for the AMD64 Processor"). This is
