@@ -38,6 +38,19 @@ struct
       (Nativeint.shift_left x (32 - y))
 end
 
+(* Trampolines *)
+
+let trampolines = ref ([] : (string * label) list)
+
+let jit_trampoline sym =
+  try
+    List.assoc sym !trampolines
+  with
+    Not_found ->
+      let lbl = new_label() in
+      trampolines := (sym, lbl) :: !trampolines;
+      lbl
+
 (* Instructions *)
 
 (* Condition codes *)
@@ -48,8 +61,6 @@ type cc =
   | GT | LE | AL | NV
 
 external int_of_cc: cc -> int = "%identity"
-
-(* Instructions *)
 
 type shift =
     LSL | LSR | ASR | ROR
@@ -107,7 +118,8 @@ let jit_bgt_label lbl = jit_b_label ~cc:GT lbl
 let jit_bl_label lbl = jit_b_label ~link:true lbl
 
 let jit_b_symbol ?cc:(cc=AL) ?link:(link=false) sym =
-  jit_b_tag ~cc ~link (jit_symbol_tag sym)
+  let lbl = jit_trampoline sym in
+  jit_b_tag ~cc ~link (jit_label_tag lbl)
 
 let jit_bl_symbol   sym = jit_b_symbol ~link:true sym
 let jit_blcc_symbol sym = jit_b_symbol ~cc:CC ~link:true sym
@@ -805,7 +817,16 @@ let data = Jitaux.data
 (* Beginning / end of an assembly file *)
 
 let begin_assembly() =
+  trampolines := [];
   Jitaux.begin_assembly()
 
 let end_assembly() =
+  (* Emit the trampolines *)
+  jit_text();
+  jit_align 0 4;
+  List.iter (fun (sym, lbl) ->
+               jit_label lbl;
+               jit_ldr pc (Memory(pc, Immediate(-4n)));
+               jit_reloc (R_ABS_32(jit_symbol_tag sym));
+               jit_int32l 0l) !trampolines;
   Jitaux.end_assembly()
