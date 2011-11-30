@@ -237,6 +237,7 @@ let patch_reloc (sec, ofs, rel) =
               then (-a)
               else a in
       let x = Addr.sub (Addr.add_int s a) p in
+      assert (x > -4096n && x < 4096n);
       let i = Int32.logor
                 (Int32.logand i 0xff7ff000l)
                 (Int32.logand
