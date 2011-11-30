@@ -25,6 +25,20 @@ struct chunk{
 
 static struct chunk *chunklist = NULL;
 
+static inline unsigned chunk_alignment()
+{
+#if defined(__amd64__) || defined(__i386__)
+  /* Pad sections to 64-byte boundaries to avoid having code
+     and data on a single (64-byte) cache line (cf. "Software
+     Optimization Guide for the AMD64 Processor"). */
+  return 64;
+#elif defined(__ppc__) || defined(__powerpc__)
+  return 32;
+#else
+  return sizeof(void *);
+#endif
+}
+
 static struct chunk *chunk_alloc(intnat size)
 {
   struct chunk *chunk;
@@ -87,6 +101,12 @@ again:
   return chunk;
 }
 
+value camlnat_mem_alignment(value dummy)
+{
+  dummy = Val_long(chunk_alignment());
+  return dummy;
+}
+
 value camlnat_mem_reserve(value size)
 {
   struct chunk **chunkp;
@@ -94,7 +114,7 @@ value camlnat_mem_reserve(value size)
 
   assert(Is_long(size));
   assert(Long_val(size) >= 0);
-  assert((Long_val(size) % 64) == 0);
+  assert((Long_val(size) % chunk_alignment()) == 0);
 
   size = Long_val(size);
 
@@ -116,8 +136,8 @@ value camlnat_mem_reserve(value size)
     chunklist = chunk;
   }
 
-  assert((chunk->size % 64) == 0);
-  assert((chunk->addr % 64) == 0);
+  assert((chunk->size % chunk_alignment()) == 0);
+  assert((chunk->addr % chunk_alignment()) == 0);
   assert(chunk->size >= size);
   assert(chunk == chunklist);
   assert(chunk != NULL);
@@ -136,11 +156,11 @@ value camlnat_mem_prepare(value addr, value data, value size)
   assert(Is_block(data));
   assert(chunklist != NULL);
   assert(Long_val(size) >= 0);
-  assert((Long_val(size) % 64) == 0);
-  assert((chunklist->size % 64) == 0);
+  assert((Long_val(size) % chunk_alignment()) == 0);
+  assert((chunklist->size % chunk_alignment()) == 0);
   assert(Tag_val(addr) == Custom_tag);
   assert(Tag_val(data) == String_tag);
-  assert((Nativeint_val(addr) % 64) == 0);
+  assert((Nativeint_val(addr) % chunk_alignment()) == 0);
   assert(chunklist->addr <= Nativeint_val(addr));
   assert(chunklist->addr + chunklist->size >= Nativeint_val(addr) + Long_val(size));
 
@@ -150,6 +170,7 @@ value camlnat_mem_prepare(value addr, value data, value size)
     src = (const char *)String_val(data);
 #if (defined(__clang__) || defined(__GNUC__)) \
     && (defined(__amd64__) || defined(__i386__))
+    assert(chunk_alignment() >= 4 * 16);
     if (((uintptr_t)src & 0x0f) == 0) {
       /* src has 16-byte alignment */
       asm volatile(".align  4\n"
@@ -200,23 +221,25 @@ value camlnat_mem_prepare(value addr, value data, value size)
 value camlnat_mem_commit(value addr, value size)
 {
   struct chunk *chunk;
+  mlsize_t len;
 
   assert(Is_long(size));
   assert(Is_block(addr));
   assert(chunklist != NULL);
   assert(Long_val(size) >= 0);
-  assert((Long_val(size) % 64) == 0);
-  assert((chunklist->size % 64) == 0);
+  assert((Long_val(size) % chunk_alignment()) == 0);
+  assert((chunklist->size % chunk_alignment()) == 0);
   assert(Tag_val(addr) == Custom_tag);
-  assert((Nativeint_val(addr) % 64) == 0);
+  assert((Nativeint_val(addr) % chunk_alignment()) == 0);
   assert(chunklist->size >= Long_val(size));
   assert(chunklist->addr == Nativeint_val(addr));
 
   chunk = chunklist;
+  len = Long_val(size);
   // TODO - Flush icache
-  chunk->addr += Long_val(size);
-  chunk->size -= Long_val(size);
-  if (chunk->size < 128) {
+  chunk->addr += len;
+  chunk->size -= len;
+  if (chunk->size < 2 * chunk_alignment()) {
     /* Drop empty chunks from the list */
     chunklist = chunk->next;
     free(chunk);
