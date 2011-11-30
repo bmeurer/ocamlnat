@@ -85,7 +85,7 @@ and lr = r14
 and pc = r15
 
 let jit_instr ?cc:(cc=AL) opcode =
-  assert (opcode < 0x10000000);
+  assert (opcode >= 0 && opcode < 0x10000000);
   let cond = Int32.shift_left (Int32.of_int (int_of_cc cc)) 28 in
   jit_int32l (Int32.logor cond (Int32.of_int opcode))
 
@@ -132,7 +132,7 @@ let jit_alu ?cc:(cc=AL) rn rd operand2 opcode =
                       assert (r mod 2 == 0);
                       let nr = Nativeint.rotate_right n r in
                       if Nativeint.logand nr (Nativeint.lognot 0xffn) = 0n
-                      then 32 - r
+                      then (32 - r) land 31
                       else rotate (r + 2) n in
                     let r = rotate 0 n in
                     0x2000000
