@@ -53,7 +53,8 @@ struct
   external alignment: unit -> int = "camlnat_mem_alignment" "noalloc"
   external reserve: int -> t = "camlnat_mem_reserve"
   external prepare: t -> string -> int -> unit = "camlnat_mem_prepare" "noalloc"
-  external commit: t -> int -> unit = "camlnat_mem_commit"
+  external cacheflush: t -> int -> unit = "camlnat_mem_cacheflush" "noalloc"
+  external commit: t -> int -> unit = "camlnat_mem_commit" "noalloc"
 
   let mask = alignment() - 1
 
@@ -402,6 +403,8 @@ let end_assembly() =
   (* Prepare section content *)
   Memory.prepare text_sec.sec_addr text_sec.sec_buf text_sec.sec_pos;
   Memory.prepare data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
+  (* Flush the instruction cache *)
+  Memory.cacheflush text_sec.sec_addr text_sec.sec_pos;
   (* Register global symbols *)
   List.iter
     (fun sym -> Symbol.add sym (addr_of_symbol sym))

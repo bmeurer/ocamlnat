@@ -32,7 +32,8 @@ static inline unsigned chunk_alignment()
      and data on a single (64-byte) cache line (cf. "Software
      Optimization Guide for the AMD64 Processor"). */
   return 64;
-#elif defined(__ppc__) || defined(__powerpc__)
+#elif defined(_ARCH_PPC) || defined(_POWER) \
+      || defined(__POWERPC__) || defined(__ppc__)
   return 32;
 #else
   return sizeof(void *);
@@ -103,8 +104,8 @@ again:
 
 value camlnat_mem_alignment(value dummy)
 {
-  dummy = Val_long(chunk_alignment());
-  return dummy;
+  (void)dummy;
+  return Val_long(chunk_alignment());
 }
 
 value camlnat_mem_reserve(value size)
@@ -218,10 +219,49 @@ value camlnat_mem_prepare(value addr, value data, value size)
   return Val_unit;
 }
 
+value camlnat_mem_cacheflush(value addr, value size)
+{
+  const char *beg;
+  const char *end;
+
+  assert(Is_long(size));
+  assert(Is_block(addr));
+  assert(Long_val(size) >= 0);
+  assert((Long_val(size) % chunk_alignment()) == 0);
+  assert((chunklist->size % chunk_alignment()) == 0);
+  assert(Tag_val(addr) == Custom_tag);
+  assert((Nativeint_val(addr) % chunk_alignment()) == 0);
+
+  beg = (const char *)Nativeint_val(addr);
+  end = beg + Long_val(size);
+
+#if defined(__APPLE__)
+  sys_icache_invalidate((void *)beg, end - beg);
+#elif defined(_WIN32)
+  FlushInstructionCache(GetCurrentProcess(), beg, end - beg);
+#elif (defined(_ARCH_PPC) || defined(_POWER) \
+       || defined(__POWERPC__) || defined(__ppc__)) \
+      && defined(__GNUC__)
+  assert(((uintptr_t)beg % chunk_alignment()) == 0);
+  assert(((uintptr_t)end % chunk_alignment()) == 0);
+  for (const char *ptr = beg; ptr < end; ptr += chunk_alignment())
+    asm volatile("dcbf 0, %0" :: "r"(ptr));
+  asm volatile("sync");
+  for (const char *ptr = beg; ptr < end; ptr += chunk_alignment())
+    asm volatile("icbi 0, %0" :: "r"(ptr));
+  asm volatile("isync");
+#elif defined(__arm__) && defined(__GNUC__)
+  __clear_cache(beg, end);
+#else
+  (void)beg;
+  (void)end;
+#endif
+  return Val_unit;
+}
+
 value camlnat_mem_commit(value addr, value size)
 {
   struct chunk *chunk;
-  mlsize_t len;
 
   assert(Is_long(size));
   assert(Is_block(addr));
@@ -235,10 +275,8 @@ value camlnat_mem_commit(value addr, value size)
   assert(chunklist->addr == Nativeint_val(addr));
 
   chunk = chunklist;
-  len = Long_val(size);
-  // TODO - Flush icache
-  chunk->addr += len;
-  chunk->size -= len;
+  chunk->addr += Long_val(size);
+  chunk->size -= Long_val(size);
   if (chunk->size < 2 * chunk_alignment()) {
     /* Drop empty chunks from the list */
     chunklist = chunk->next;
@@ -246,4 +284,3 @@ value camlnat_mem_commit(value addr, value size)
   }
   return Val_unit;
 }
-
