@@ -50,9 +50,16 @@ module Memory =
 struct
   type t = Addr.t
 
+  external alignment: unit -> int = "camlnat_mem_alignment" "noalloc"
   external reserve: int -> t = "camlnat_mem_reserve"
   external prepare: t -> string -> int -> unit = "camlnat_mem_prepare" "noalloc"
-  external commit: t -> int -> unit = "camlnat_mem_commit"
+  external cacheflush: t -> int -> unit = "camlnat_mem_cacheflush" "noalloc"
+  external commit: t -> int -> unit = "camlnat_mem_commit" "noalloc"
+
+  let mask = alignment() - 1
+
+  let align n =
+    (n + mask) land (lnot mask)
 end
 
 (* Symbol management *)
@@ -411,20 +418,19 @@ let end_assembly() =
   jit_data();
   jit_global sym;
   jit_symbol sym;
-  let sym = (Compilenv.make_symbol (Some "frametable")) in
-  jit_int32 0;
-  jit_global sym;
-  jit_symbol sym;
-  emit_frames efa;
-  (* Pad sections to 64-byte boundaries to avoid having code
-     and data on a single (64-byte) cache line (cf. "Software
-     Optimization Guide for the AMD64 Processor"). This is
-     safe since the section buffer length is always a multiple
-     of 1K. *)
-  text_sec.sec_pos <- (text_sec.sec_pos + 63) land (-64);
-  data_sec.sec_pos <- (data_sec.sec_pos + 63) land (-64);
-  assert ((text_sec.sec_pos mod 64) == 0);
-  assert ((data_sec.sec_pos mod 64) == 0);
+  (* Emit the frametable if there are any frame descriptors *)
+  if !frame_descriptors <> [] then begin
+    let sym = (Compilenv.make_symbol (Some "frametable")) in
+    jit_int32 0;
+    jit_global sym;
+    jit_symbol sym;
+    emit_frames efa
+  end;
+  (* Pad sections to required alignment *)
+  text_sec.sec_pos <- Memory.align text_sec.sec_pos;
+  data_sec.sec_pos <- Memory.align data_sec.sec_pos;
+  assert ((text_sec.sec_pos mod Memory.alignment()) == 0);
+  assert ((data_sec.sec_pos mod Memory.alignment()) == 0);
   (* Reserve memory for the sections *)
   text_sec.sec_addr <- Memory.reserve (text_sec.sec_pos + data_sec.sec_pos);
   data_sec.sec_addr <- Addr.add_int text_sec.sec_addr text_sec.sec_pos;
@@ -433,6 +439,8 @@ let end_assembly() =
   (* Prepare section content *)
   Memory.prepare text_sec.sec_addr text_sec.sec_buf text_sec.sec_pos;
   Memory.prepare data_sec.sec_addr data_sec.sec_buf data_sec.sec_pos;
+  (* Flush the instruction cache *)
+  Memory.cacheflush text_sec.sec_addr text_sec.sec_pos;
   (* Register global symbols *)
   List.iter
     (fun sym -> Symbol.add sym (addr_of_symbol sym))
