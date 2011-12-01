@@ -165,21 +165,21 @@ let jit_alu ?cc:(cc=AL) rn rd operand2 opcode =
            lor (opcode lsl 20) in
   jit_instr ~cc opcode
 
-let jit_and   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b00000
-let jit_eor   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b00010
-let jit_sub   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b00100
+let jit_and   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b00000
+let jit_eor   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b00010
+let jit_sub   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b00100
 let jit_subne             rd rn operand2 = jit_sub ~cc:NE rn rd operand2
 let jit_sublt             rd rn operand2 = jit_sub ~cc:LT rn rd operand2
-let jit_rsb   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b00110
-let jit_add   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b01000
+let jit_rsb   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b00110
+let jit_add   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b01000
 let jit_addlt             rd rn operand2 = jit_add ~cc:LT rn rd operand2
-let jit_tst   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc rn rn operand2 0b10000
-let jit_cmp   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc rn rn operand2 0b10100
-let jit_orr   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b11000
-let jit_mov   ?cc:(cc=AL) rd    operand2 = jit_alu ~cc rd rd operand2 0b11010
-let jit_movs  ?cc:(cc=AL) rd    operand2 = jit_alu ~cc rd rd operand2 0b11011
-let jit_bic   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc rn rd operand2 0b11100
-let jit_mvn   ?cc:(cc=AL) rd    operand2 = jit_alu ~cc rd rd operand2 0b11110
+let jit_tst   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc    rn r0 operand2 0b10000
+let jit_cmp   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc    rn r0 operand2 0b10100
+let jit_orr   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b11000
+let jit_mov   ?cc:(cc=AL) rd    operand2 = jit_alu ~cc    r0 rd operand2 0b11010
+let jit_movs  ?cc:(cc=AL) rd    operand2 = jit_alu ~cc    r0 rd operand2 0b11011
+let jit_bic   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b11100
+let jit_mvn   ?cc:(cc=AL) rd    operand2 = jit_alu ~cc    r0 rd operand2 0b11110
 
 (* Multiply instructions *)
 
