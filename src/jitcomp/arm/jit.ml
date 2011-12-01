@@ -173,8 +173,8 @@ let jit_sublt             rd rn operand2 = jit_sub ~cc:LT rn rd operand2
 let jit_rsb   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b00110
 let jit_add   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b01000
 let jit_addlt             rd rn operand2 = jit_add ~cc:LT rn rd operand2
-let jit_tst   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc    rn r0 operand2 0b10000
-let jit_cmp   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc    rn r0 operand2 0b10100
+let jit_tst   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc    rn r0 operand2 0b10001
+let jit_cmp   ?cc:(cc=AL)    rn operand2 = jit_alu ~cc    rn r0 operand2 0b10101
 let jit_orr   ?cc:(cc=AL) rd rn operand2 = jit_alu ~cc    rn rd operand2 0b11000
 let jit_mov   ?cc:(cc=AL) rd    operand2 = jit_alu ~cc    r0 rd operand2 0b11010
 let jit_movs  ?cc:(cc=AL) rd    operand2 = jit_alu ~cc    r0 rd operand2 0b11011
