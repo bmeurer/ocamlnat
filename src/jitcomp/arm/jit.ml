@@ -271,11 +271,11 @@ let rec regmask = function
   | r :: rl -> (1 lsl (regindex r)) lor (regmask rl)
 
 let jit_ldmfd ?cc:(cc=AL) ?wb:(wb=false) rn rl =
-  let opcode = (if wb then 0b10001011 else 0b10001001) lsl 20 in
+  let opcode = if wb then 0x8b00000 else 0x8900000 in
   jit_instr ~cc (opcode lor ((regindex rn) lsl 16) lor (regmask rl))
 
 let jit_stmfd ?cc:(cc=AL) ?wb:(wb=false) rn rl =
-  let opcode = (if wb then 0b10000011 else 0b10000001) lsl 20 in
+  let opcode = if wb then 0x9200000 else 0x9000000 in
   jit_instr ~cc (opcode lor ((regindex rn) lsl 16) lor (regmask rl))
 
 
