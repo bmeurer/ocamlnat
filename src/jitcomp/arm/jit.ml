@@ -80,7 +80,7 @@ let regindex = function
 
 let r0  = Register 0
 and r1  = Register 1
-and r8  = Register 18
+and r8  = Register 8
 and r10 = Register 10
 and r11 = Register 11
 and r12 = Register 12
