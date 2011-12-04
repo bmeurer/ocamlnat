@@ -743,7 +743,7 @@ let emit_instr i =
         jit_ldr pc (Memory(pc, Shift(emit_reg i.arg.(0), LSL, Immediate 2n)));
         jit_mov r0 r0;      (* nop *)
         for i = 0 to Array.length jumptbl - 1 do
-          jit_reloc (R_REL_32(jit_label_tag jumptbl.(i)));
+          jit_reloc (R_ABS_32(jit_label_tag jumptbl.(i)));
           jit_int32l 0l
         done;
         2 + Array.length jumptbl
