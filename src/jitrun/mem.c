@@ -221,8 +221,8 @@ value camlnat_mem_prepare(value addr, value data, value size)
 
 value camlnat_mem_cacheflush(value addr, value size)
 {
-  const char *beg;
-  const char *end;
+  char *beg;
+  char *end;
 
   assert(Is_long(size));
   assert(Is_block(addr));
@@ -232,11 +232,11 @@ value camlnat_mem_cacheflush(value addr, value size)
   assert(Tag_val(addr) == Custom_tag);
   assert((Nativeint_val(addr) % chunk_alignment()) == 0);
 
-  beg = (const char *)Nativeint_val(addr);
+  beg = (char *)Nativeint_val(addr);
   end = beg + Long_val(size);
 
 #if defined(__APPLE__)
-  sys_icache_invalidate((void *)beg, end - beg);
+  sys_icache_invalidate(beg, end - beg);
 #elif defined(_WIN32)
   FlushInstructionCache(GetCurrentProcess(), beg, end - beg);
 #elif (defined(_ARCH_PPC) || defined(_POWER) \
@@ -244,10 +244,10 @@ value camlnat_mem_cacheflush(value addr, value size)
       && defined(__GNUC__)
   assert(((uintptr_t)beg % chunk_alignment()) == 0);
   assert(((uintptr_t)end % chunk_alignment()) == 0);
-  for (const char *ptr = beg; ptr < end; ptr += chunk_alignment())
+  for (char *ptr = beg; ptr < end; ptr += chunk_alignment())
     asm volatile("dcbf 0, %0" :: "r"(ptr));
   asm volatile("sync");
-  for (const char *ptr = beg; ptr < end; ptr += chunk_alignment())
+  for (char *ptr = beg; ptr < end; ptr += chunk_alignment())
     asm volatile("icbi 0, %0" :: "r"(ptr));
   asm volatile("isync");
 #elif defined(__arm__) && defined(__GNUC__)
