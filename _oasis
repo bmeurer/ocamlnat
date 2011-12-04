@@ -47,7 +47,7 @@ Executable ocamlnat
     CCOpt: -DNDEBUG
     ByteOpt: -noassert -unsafe
     NativeOpt: -noassert -nodynlink -unsafe
-  BuildDepends: findlib (>= 1.2.7)
+  BuildDepends: dynlink, findlib (>= 1.2.7)
   CompiledObject: native
 
 Executable test

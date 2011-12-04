@@ -3,7 +3,7 @@
 <src/*/*.ml{,i}>: oasis_executable_ocamlnat_native
 
 # OASIS_START
-# DO NOT EDIT (digest: b570f72a0f58506b71013e09f121bfb3)
+# DO NOT EDIT (digest: 2128cd3c6a2bfd2a063fbc10ba6eff64)
 # Executable test
 <tests/test.{native,byte}>: pkg_oUnit
 <tests/*.ml{,i}>: pkg_oUnit
@@ -24,8 +24,13 @@
 "src/jitrun/sym.c": oasis_executable_ocamlnat_native
 "src/ocamlnat.native": use_libocamlnat
 "src/ocamlnat.native": pkg_findlib
+"src/ocamlnat.native": pkg_dynlink
 <src/*.ml{,i}>: pkg_findlib
+<src/*.ml{,i}>: pkg_dynlink
 "src/jitrun/mem.c": pkg_findlib
+"src/jitrun/mem.c": pkg_dynlink
 "src/jitrun/str.c": pkg_findlib
+"src/jitrun/str.c": pkg_dynlink
 "src/jitrun/sym.c": pkg_findlib
+"src/jitrun/sym.c": pkg_dynlink
 # OASIS_STOP
