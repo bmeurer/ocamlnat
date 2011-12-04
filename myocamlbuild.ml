@@ -540,6 +540,28 @@ let os_type = BaseEnvLight.var_get "os_type" env;;
 let windows = os_type = "Win32";;
 if windows then tag_any ["windows"];;
 
+(* The configuration file *)
+rule "The configuration file"
+  ~prod:"src/jitcomp/config.ml"
+  ~dep:"src/jitcomp/config.mlp"
+  ~insert:`top
+  begin fun _ _ ->
+    let s v = A(Printf.sprintf "s|$%s|%s|" v (BaseEnvLight.var_get v env)) in
+    Cmd(S[A"sed";
+          A"-e"; s "pkg_version";
+          A"-e"; s "ccomp_type";
+          A"-e"; s "architecture";
+          A"-e"; s "model";
+          A"-e"; s "system";
+          A"-e"; s "ext_obj";
+          A"-e"; s "ext_asm";
+          A"-e"; s "ext_lib";
+          A"-e"; s "ext_dll";
+          A"-e"; s "systhread_supported";
+          Sh"<"; P"src/jitcomp/config.mlp";
+          Sh">"; Px"src/jitcomp/config.ml"])
+  end;;
+
 (* Choose the right machine-dependent files *)
 
 let mk_arch_rule ~dir ~src ~dst =

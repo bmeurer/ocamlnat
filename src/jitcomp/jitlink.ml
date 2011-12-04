@@ -37,7 +37,7 @@ let loadfile name0 =
       let temp = (Filename.basename (Filename.chop_extension name0)) in
       let cmxs = Filename.temp_file temp ".cmxs" in
       let cmd = Printf.sprintf "%s -linkall -shared -o %s %s"
-                  (Filename.quote Config.standard_ocamlopt)
+                  (Filename.quote "ocamlopt")
                   (Filename.quote cmxs)
                   (Filename.quote name) in
       if Ccomp.command cmd != 0 then raise (Error Cannot_generate_cmxs);

@@ -14,7 +14,7 @@
 
 let version = "$pkg_version"
 
-let standard_library_default = "$standard_library_default"
+let standard_library_default = Findlib.ocaml_stdlib()
 
 let standard_library =
   try
@@ -25,12 +25,11 @@ let standard_library =
   with Not_found ->
     standard_library_default
 
-let standard_ocamlopt = "$ocamlopt"
-let standard_runtime = "$standard_runtime"
+let standard_runtime = "ocamlrun"
 let ccomp_type = "$ccomp_type"
-let bytecomp_c_compiler = "$bytecomp_c_compiler"
+let bytecomp_c_compiler = ""
 let bytecomp_c_libraries = ""
-let native_c_compiler = "$native_c_compiler"
+let native_c_compiler = ""
 let native_c_libraries = ""
 let native_pack_linker = ""
 let ranlib = ""
@@ -75,7 +74,7 @@ let ext_dll = "$ext_dll"
 
 let default_register_allocator = "gc"
 
-let default_executable_name = "$default_executable_name"
+let default_executable_name = ""
 
 let systhread_supported = $systhread_supported;;
 
