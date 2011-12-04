@@ -209,13 +209,13 @@ let jit_xfer ?cc:(cc=AL) rd address opcode =
                     lor (if n < 0n then 0 else 0x800000)
                 | Memory(rn, Shift(rm, shift, Immediate n)) ->
                     assert (n >= 0n && n < 32n);
-                    0x3000000
+                    0x3800000
                     lor ((regindex rn) lsl 16)
                     lor ((Nativeint.to_int n) lsl 7)
                     lor ((int_of_shift shift) lsl 5)
                     lor (regindex rm)
                 | Memory(rn, Shift(rm, shift, rs)) ->
-                    0x3000010
+                    0x3800010
                     lor ((regindex rn) lsl 16)
                     lor ((regindex rs) lsl 8)
                     lor ((int_of_shift shift) lsl 5)
