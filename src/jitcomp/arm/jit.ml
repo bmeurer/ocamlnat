@@ -384,13 +384,12 @@ let instr_for_shift_intop = function
 (* Recognize immediate operands *)
 
 (* Immediate operands are 8-bit immediate values, zero-extended, and rotated
-   right by 0, 2, 4, ... 30 bits.
-   We check only with 8-bit values shifted left 0 to 24 bits. *)
+   right by 0, 2, 4, ... 30 bits. *)
 
 let rec is_immed n shift =
-  shift <= 24 &&
-  (Nativeint.logand n (Nativeint.shift_left 0xFFn shift) = n
-   || is_immed n (shift + 2))
+  shift <= 30
+  && (Nativeint.logand n 0xffn = n
+   || is_immed (Nativeint.rotate_right n 2) (shift + 2))
 
 let is_immediate n = is_immed n 0
 
