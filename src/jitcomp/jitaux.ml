@@ -198,8 +198,7 @@ let patch_reloc (sec, ofs, rel) =
   match rel with
     R_ABS_32 tag ->
       let a = jit_tag_addr tag in
-      assert (a >= -2147483648n);
-      assert (a <= 2147483647n);
+      assert (a >= -2147483648n && a <= 2147483647n);
       let d = String.unsafe_get32 sec.sec_buf ofs in
       let x = Int32.add (Addr.to_int32 a) d in
       String.unsafe_set32 sec.sec_buf ofs x
