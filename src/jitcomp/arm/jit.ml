@@ -30,11 +30,11 @@ struct
   let rotate_left x y =
     Nativeint.logor
       (Nativeint.shift_left x y)
-      (Nativeint.shift_right x (32 - y))
+      (Nativeint.shift_right_logical x (32 - y))
 
   let rotate_right x y =
     Nativeint.logor
-      (Nativeint.shift_right x y)
+      (Nativeint.shift_right_logical x y)
       (Nativeint.shift_left x (32 - y))
 end
 
@@ -142,14 +142,15 @@ let jit_alu ?cc:(cc=AL) rn rd operand2 opcode =
                     let rec rotate r n =
                       assert (r >= 0 && r < 32);
                       assert (r mod 2 == 0);
-                      let nr = Nativeint.rotate_right n r in
-                      if Nativeint.logand nr (Nativeint.lognot 0xffn) = 0n
-                      then (32 - r) land 31
-                      else rotate (r + 2) n in
-                    let r = rotate 0 n in
-                    0x2000000
-                    lor ((r lsr 1) lsl 8)
-                    lor (Nativeint.to_int (Nativeint.rotate_left n r))
+                      if Nativeint.logand n 0xffn = n then begin
+                        0x2000000
+                        lor ((r lsr 1) lsl 8)
+                        lor (Nativeint.to_int n)
+                      end else begin
+                        let n = Nativeint.rotate_left n 2 in
+                        rotate (r + 2) n
+                      end in
+                    rotate 0 n
                 | Shift(rm, shift, Immediate n) ->
                     assert (n >= 0n && n < 32n);
                     ((Nativeint.to_int n) lsl 7)
