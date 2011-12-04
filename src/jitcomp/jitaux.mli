@@ -14,6 +14,19 @@
 
 open Linearize
 
+(* Native addressing *)
+
+module Addr :
+sig
+  include module type of Nativeint
+
+  external of_int64: int64 -> t = "%int64_to_nativeint"
+  external to_int64: t -> int64 = "%int64_of_nativeint"
+
+  val add_int: t -> int -> t
+  val sub_int: t -> int -> t
+end
+
 (* Execution *)
 
 type evaluation_outcome = Result of Obj.t | Exception of exn
@@ -31,15 +44,16 @@ val jit_symbol: string -> unit
 val jit_global: string -> unit
 
 type tag
+val jit_tag_addr: tag -> Addr.t
 val jit_symbol_tag: string -> tag
 external jit_label_tag: label -> tag = "%identity"
 
+type relocfn = (*S*)Addr.t -> (*P*)Addr.t -> (*A*)int32 -> int32
 type reloc =
-    R_ABS_32 of tag     (* 32bit absolute *)
-  | R_ABS_64 of tag     (* 64bit absolute *)
-  | R_REL_32 of tag     (* 32bit relative *)
-  | R_ARM_JMP_24 of tag (* ARM B/BL offsets *)
-  | R_ARM_LDR_12 of tag (* ARM LDR offsets *)
+    R_ABS_32 of tag           (* 32bit absolute *)
+  | R_ABS_64 of tag           (* 64bit absolute *)
+  | R_REL_32 of tag           (* 32bit relative *)
+  | R_FUN_32 of tag * relocfn (* 32bit custom *)
 val jit_reloc: reloc -> unit
 
 val jit_int8: int -> unit

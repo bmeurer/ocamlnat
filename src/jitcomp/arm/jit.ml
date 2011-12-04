@@ -51,6 +51,40 @@ let jit_trampoline sym =
       trampolines := (sym, lbl) :: !trampolines;
       lbl
 
+(* Relocations *)
+
+let r_arm_jmp_24 tag =
+  let fn s p i =
+    let a = (Int32.to_int i) lsl 2 in
+    let a = if (a land 0x2000000) == 0 (* sign extend *)
+            then a land 0x3fffffc
+            else a lor 0x7c000000 in
+    let x = Addr.sub (Addr.add_int s a) p in
+    assert (x >= -33554432n && x <= 33554431n);
+    Int32.logor
+      (Int32.logand i 0xff000000l)
+      (Addr.to_int32 (Addr.logand
+                       (Addr.shift_right x 2)
+                       0xffffffn)) in
+  R_FUN_32(tag, fn)
+
+let r_arm_ldr_12 tag =
+  let fn s p i =
+    let a = (Int32.to_int i) land 0xfff in
+    let a = if (Int32.logand i 0x800000l) = 0l (* up/down bit *)
+            then (-a)
+            else a in
+    let x = Addr.sub (Addr.add_int s a) p in
+    assert (x > -4096n && x < 4096n);
+    Int32.logor
+      (Int32.logand i 0xff7ff000l)
+      (Int32.logand
+        (if x < 0n
+         then Addr.to_int32 (Addr.neg x)
+         else (Int32.logor (Addr.to_int32 x) 0x800000l))
+        0x800fffl) in
+  R_FUN_32(tag, fn)
+
 (* Instructions *)
 
 (* Condition codes *)
@@ -103,7 +137,7 @@ let jit_instr ?cc:(cc=AL) opcode =
 (* Branch instructions *)
 
 let jit_b_tag ?cc:(cc=AL) ?link:(link=false) tag =
-  jit_reloc (R_ARM_JMP_24 tag);
+  jit_reloc (r_arm_jmp_24 tag);
   jit_instr ~cc (if link then 0x0bfffffe else 0x0afffffe)
 
 let jit_b_label ?cc:(cc=AL) ?link:(link=false) lbl =
@@ -223,7 +257,7 @@ let jit_xfer ?cc:(cc=AL) rd address opcode =
                 | MemoryTag(tag, addend) ->
                     (* r15 contains an address 8 bytes on from
                        the address of the current instruction *)
-                    jit_reloc (R_ARM_LDR_12 tag);
+                    jit_reloc (r_arm_ldr_12 tag);
                     let addend = addend - 8 in
                     assert (addend >= (-4096) && addend <= 4096);
                     0x10f0000

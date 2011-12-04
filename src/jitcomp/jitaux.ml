@@ -28,6 +28,9 @@ struct
 
   let add_int x y =
     add x (of_int y)
+
+  let sub_int x y =
+    sub x (of_int y)
 end
 
 (* String extensions *)
@@ -166,7 +169,7 @@ let jit_global sym =
 
 type tag = Obj.t
 
-let addr_of_tag tag =
+let jit_tag_addr tag =
   if Obj.is_int tag
   then addr_of_label (Obj.obj tag)
   else addr_of_symbol (Obj.obj tag)
@@ -178,12 +181,12 @@ external jit_label_tag: label -> tag = "%identity"
 
 (* Relocations *)
 
+type relocfn = (*S*)Addr.t -> (*P*)Addr.t -> (*A*)int32 -> int32
 type reloc =
-    R_ABS_32 of tag     (* 32bit absolute *)
-  | R_ABS_64 of tag     (* 64bit absolute *)
-  | R_REL_32 of tag     (* 32bit relative *)
-  | R_ARM_JMP_24 of tag (* ARM B/BL offsets *)
-  | R_ARM_LDR_12 of tag (* ARM LDR offsets *)
+    R_ABS_32 of tag           (* 32bit absolute *)
+  | R_ABS_64 of tag           (* 64bit absolute *)
+  | R_REL_32 of tag           (* 32bit relative *)
+  | R_FUN_32 of tag * relocfn (* 32bit custom *)
 
 let relocs = ref ([] : (section * int * reloc) list)
 
@@ -194,60 +197,29 @@ let jit_reloc reloc =
 let patch_reloc (sec, ofs, rel) =
   match rel with
     R_ABS_32 tag ->
-      let a = addr_of_tag tag in
+      let a = jit_tag_addr tag in
       assert (a >= -2147483648n);
       assert (a <= 2147483647n);
       let d = String.unsafe_get32 sec.sec_buf ofs in
       let x = Int32.add (Addr.to_int32 a) d in
       String.unsafe_set32 sec.sec_buf ofs x
   | R_ABS_64 tag ->
-      let a = Addr.to_int64 (addr_of_tag tag) in
+      let a = Addr.to_int64 (jit_tag_addr tag) in
       let d = String.unsafe_get64 sec.sec_buf ofs in
       let x = Int64.add a d in
       String.unsafe_set64 sec.sec_buf ofs x
   | R_REL_32 tag ->
-      let t = addr_of_tag tag in
+      let t = jit_tag_addr tag in
       let r = Addr.add_int sec.sec_addr ofs in
       let d = Addr.of_int32 (String.unsafe_get32 sec.sec_buf ofs) in
       let x = Addr.add (Addr.sub t r) d in
       assert (x >= -2147483648n && x <= 2147483647n);
       String.unsafe_set32 sec.sec_buf ofs (Addr.to_int32 x)
-  | R_ARM_JMP_24 tag -> (* ((S + A) | T) – P *)
-      let s = addr_of_tag tag in
+  | R_FUN_32(tag, fn) ->
+      let s = jit_tag_addr tag in
       let p = Addr.add_int sec.sec_addr ofs in
-      let i = String.unsafe_get32 sec.sec_buf ofs in
-      let a = (Int32.to_int i) lsl 2 in
-      let a = if (a land 0x2000000) == 0 (* sign extend *)
-              then a land 0x3fffffc
-              else a lor 0x7c000000 in
-      let x = Addr.sub (Addr.add_int s a) p in
-      assert (x >= -33554432n && x <= 33554431n);
-      let i = Int32.logor
-                (Int32.logand i 0xff000000l)
-                (Addr.to_int32 (Addr.logand
-                                 (Addr.shift_right x 2)
-                                 0xffffffn)) in
-      String.unsafe_set32 sec.sec_buf ofs i
-  | R_ARM_LDR_12 tag ->
-      let s = addr_of_tag tag in
-      let p = Addr.add_int sec.sec_addr ofs in
-      let i = String.unsafe_get32 sec.sec_buf ofs in
-      let a = (Int32.to_int i) land 0xfff in
-      let a = if (Int32.logand i 0x800000l) = 0l (* up/down bit *)
-              then (-a)
-              else a in
-      let x = Addr.sub (Addr.add_int s a) p in
-      assert (x > -4096n && x < 4096n);
-      let i = Int32.logor
-                (Int32.logand i 0xff7ff000l)
-                (Int32.logand
-                   (if x < 0n
-                    then Addr.to_int32 (Addr.neg x)
-                    else (Int32.logor
-                            (Addr.to_int32 x)
-                            0x800000l))
-                   0x800fffl) in
-      String.unsafe_set32 sec.sec_buf ofs i
+      let a = String.unsafe_get32 sec.sec_buf ofs in
+      String.unsafe_set32 sec.sec_buf ofs (fn s p a)
 
 (* Data types *)
 
