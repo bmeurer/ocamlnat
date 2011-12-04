@@ -1,5 +1,5 @@
 <src/{asmcomp,bytecomp,jitcomp,parsing,toplevel,typing,utils}>: include
-<src/*/*.ml{,i}>: pkg_findlib
+<src/*/*.ml{,i}>: pkg_dynlink, pkg_findlib
 <src/*/*.ml{,i}>: oasis_executable_ocamlnat_native
 
 # OASIS_START
