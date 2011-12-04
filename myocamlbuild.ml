@@ -526,9 +526,15 @@ module Custom = struct
     in
       match e with
       | Before_options ->
-          (* Use ocamlfind for ocamlmklib to ease cross compiling *)
+          (* Use ocamlfind for ocamlmklib, if supported,
+             to help with cross compiling *)
+          let open Command in
           let open MyOCamlbuildFindlib in
-          Options.ocamlmklib := ocamlfind & A"ocamlmklib"
+          let ocamlmklib = ocamlfind & A"ocamlmklib" in
+          if (try execute ~quiet:true (Cmd(ocamlmklib)); true
+              with _ -> false) then begin
+            Options.ocamlmklib := ocamlmklib
+          end
 
       | After_rules ->
           let module M = struct
