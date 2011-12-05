@@ -44,6 +44,9 @@ static struct chunk *chunk_alloc(intnat size)
 {
   struct chunk *chunk;
   static int pagemask = 0;
+#if !defined(_WIN32)
+  void *pagehint = &caml_callback_exn;
+#endif
   void *addr;
   intnat areasize;
 
@@ -77,11 +80,17 @@ again:
                         MEM_COMMIT | MEM_RESERVE,
                         PAGE_EXECUTE_READWRITE);
 #else
-    addr = mmap(NULL, areasize,
+    addr = mmap(pagehint, areasize,
                 PROT_EXEC | PROT_READ | PROT_WRITE,
                 MAP_ANON | MAP_PRIVATE, -1, 0);
-    if (addr == MAP_FAILED)
+    if (addr == MAP_FAILED) {
+      /* Retry without the hint */
+      if (pagehint != NULL) {
+        pagehint = NULL;
+        goto again;
+      }
       addr = NULL;
+    }
 #endif
 
     if (addr == NULL) {
