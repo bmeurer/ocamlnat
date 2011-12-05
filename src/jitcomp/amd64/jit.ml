@@ -48,7 +48,7 @@ type argument =
     Register of int
   | Memory of (*ireg*)int * (*scale*)int * (*breg*)int * (*disp*)int
               (* A value of -1 for breg means no base register *)
-  | MemoryTag of tag
+  | MemoryTag of Tag.t
   | Immediate of int
 
 let rax = Register 0
@@ -370,17 +370,17 @@ let jit_jmp_tag tag =
   jit_int32l (-4l)
 
 let jit_jmp_label lbl =
-  jit_jmp_tag (jit_label_tag lbl)
+  jit_jmp_tag (Tag.of_label lbl)
 
 let jit_jmp_symbol sym =
   (* local symbols don't need indirection *)
   if is_local_symbol sym then
     (* jmp sym *)
-    jit_jmp_tag (jit_symbol_tag sym)
+    jit_jmp_tag (Tag.of_symbol sym)
   else begin
     (* jmpq sym@GOT(%rip) *)
     let lbl = jit_external_label_for_symbol sym in
-    jit_jmpq (MemoryTag(jit_label_tag lbl))
+    jit_jmpq (MemoryTag(Tag.of_label lbl))
   end
 
 let jit_callq dst =
@@ -392,17 +392,17 @@ let jit_call_tag tag =
   jit_int32l (-4l)
 
 let jit_call_label lbl =
-  jit_call_tag (jit_label_tag lbl)
+  jit_call_tag (Tag.of_label lbl)
 
 let jit_call_symbol sym =
   (* local symbols don't need indirection *)
   if is_local_symbol sym then
     (* call sym *)
-    jit_call_tag (jit_symbol_tag sym)
+    jit_call_tag (Tag.of_symbol sym)
   else begin
     (* callq sym@GOT(%rip) *)
     let lbl = jit_external_label_for_symbol sym in
-    jit_callq (MemoryTag(jit_label_tag lbl))
+    jit_callq (MemoryTag(Tag.of_label lbl))
   end
 
 let jit_ret() =
@@ -438,7 +438,7 @@ external int_of_cc: cc -> int = "%identity"
 let jit_jcc_label cc lbl =
   jit_int8 0x0f;
   jit_int8 (0x80 + (int_of_cc cc));
-  jit_reloc (R_REL_32(jit_label_tag lbl));
+  jit_reloc (R_REL_32(Tag.of_label lbl));
   jit_int32l (-4l)
 
 let jit_jb_label   lbl = jit_jcc_label B   lbl
@@ -465,11 +465,11 @@ let jit_setcc cc dst =
 let jit_load_symbol_addr sym dst =
   (* local symbols don't need indirection *)
   if is_local_symbol sym then
-    jit_leaq (MemoryTag(jit_symbol_tag sym)) dst
+    jit_leaq (MemoryTag(Tag.of_symbol sym)) dst
   else begin
     (* GOT magic... well somewhat *)
     let lbl = jit_external_label_for_symbol sym in
-    jit_movq (MemoryTag(jit_label_tag lbl)) dst
+    jit_movq (MemoryTag(Tag.of_label lbl)) dst
   end
  
 
@@ -733,7 +733,7 @@ let emit_instr fallthrough i =
         | _ ->
           let lbl = new_label() in
           float_constants := (lbl, s) :: !float_constants;
-          jit_movsd (MemoryTag(jit_label_tag lbl)) (emit_reg i.res.(0))
+          jit_movsd (MemoryTag(Tag.of_label lbl)) (emit_reg i.res.(0))
         end
     | Lop(Iconst_symbol s) ->
         jit_load_symbol_addr s (emit_reg i.res.(0))
@@ -879,10 +879,10 @@ let emit_instr fallthrough i =
         (instr_for_intop op) (Immediate n) (emit_reg i.res.(0))
     | Lop(Iabsf) ->
         if !absf_mask_lbl == 0 then absf_mask_lbl := new_label();
-        jit_andpd (MemoryTag(jit_label_tag !absf_mask_lbl)) (emit_reg i.res.(0))
+        jit_andpd (MemoryTag(Tag.of_label !absf_mask_lbl)) (emit_reg i.res.(0))
     | Lop(Inegf) ->
         if !negf_mask_lbl == 0 then negf_mask_lbl := new_label();
-        jit_xorpd (MemoryTag(jit_label_tag !negf_mask_lbl)) (emit_reg i.res.(0))
+        jit_xorpd (MemoryTag(Tag.of_label !negf_mask_lbl)) (emit_reg i.res.(0))
     | Lop(Iaddf | Isubf | Imulf | Idivf as floatop) ->
         (instr_for_floatop floatop) (emit_reg i.arg.(1)) (emit_reg i.res.(0))
     | Lop(Ifloatofint) ->
@@ -964,7 +964,7 @@ let emit_instr fallthrough i =
           if i.arg.(0).loc = Reg 0 (* rax *)
           then (rdx, rax)
           else (rax, rdx) in
-        jit_leaq (MemoryTag(jit_label_tag lbl)) tmp1;
+        jit_leaq (MemoryTag(Tag.of_label lbl)) tmp1;
         jit_movslq (memindex 0 tmp1 (emit_reg i.arg.(0)) 4) tmp2;
         jit_addq tmp2 tmp1;
         jit_jmpq tmp1;
@@ -973,7 +973,7 @@ let emit_instr fallthrough i =
         jit_label lbl;
         for i = 0 to Array.length jumptbl - 1 do
           (* .long jumptbl.(i) - lbl *)
-          jit_reloc (R_REL_32(jit_label_tag jumptbl.(i)));
+          jit_reloc (R_REL_32(Tag.of_label jumptbl.(i)));
           jit_int32 (4 * i)
         done;
         jit_text()
@@ -1055,7 +1055,7 @@ let end_assembly() =
   (* Output the external address table *)
   List.iter (fun (sym, lbl) ->
                jit_label lbl;
-               jit_reloc (R_ABS_64(jit_symbol_tag sym));
+               jit_reloc (R_ABS_64(Tag.of_symbol sym));
                jit_int64L 0L) !externals;
   (* Emit floating point constants *)
   List.iter emit_float_constant !float_constants;

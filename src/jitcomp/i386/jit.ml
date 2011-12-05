@@ -32,10 +32,10 @@ type argument =
     Register of int
   | Memory of (*ireg*)int * (*scale*)int * (*breg*)int * (*disp*)int
               (* A value of -1 for breg means no base register *)
-  | MemoryTag of (*ireg*)int * (*scale*)int * (*disp*)int * (*tag*)tag
+  | MemoryTag of (*ireg*)int * (*scale*)int * (*disp*)int * Tag.t
                  (* A value of -1 for ireg means absolute addressing *)
   | Immediate of nativeint
-  | ImmediateTag of tag
+  | ImmediateTag of Tag.t
 
 let eax = Register 0
 let ecx = Register 1
@@ -65,12 +65,12 @@ let memtag tag disp =
   MemoryTag(-1, 0, disp, tag)
 
 let memsymbol sym =
-  memtag (jit_symbol_tag sym) 0
+  memtag (Tag.of_symbol sym) 0
 
 let memlblscale lbl ireg scale =
   match ireg with
     Register ireg ->
-      MemoryTag(ireg, scale, 0, jit_label_tag lbl)
+      MemoryTag(ireg, scale, 0, Tag.of_label lbl)
   | _ ->
       assert false
 
@@ -318,10 +318,10 @@ let jit_jmp_tag tag =
   jit_int32l (-4l)
 
 let jit_jmp_label lbl =
-  jit_jmp_tag (jit_label_tag lbl)
+  jit_jmp_tag (Tag.of_label lbl)
 
 let jit_jmp_symbol sym =
-  jit_jmp_tag (jit_symbol_tag sym)
+  jit_jmp_tag (Tag.of_symbol sym)
 
 let jit_calll dst =
   jit_mod_rm_reg 0xff dst 2
@@ -332,10 +332,10 @@ let jit_call_tag tag =
   jit_int32l (-4l)
 
 let jit_call_label lbl =
-  jit_call_tag (jit_label_tag lbl)
+  jit_call_tag (Tag.of_label lbl)
 
 let jit_call_symbol sym =
-  jit_call_tag (jit_symbol_tag sym)
+  jit_call_tag (Tag.of_symbol sym)
 
 let jit_ret() =
   jit_int8 0xc3
@@ -377,7 +377,7 @@ external int_of_cc: cc -> int = "%identity"
 let jit_jcc_label cc lbl =
   jit_int8 0x0f;
   jit_int8 (0x80 + (int_of_cc cc));
-  jit_reloc (R_REL_32(jit_label_tag lbl));
+  jit_reloc (R_REL_32(Tag.of_label lbl));
   jit_int32l (-4l)
 
 let jit_jb_label   lbl = jit_jcc_label B   lbl
@@ -501,7 +501,7 @@ let int_reg_index =
 let register_index r =
   int_reg_index.(r)
 
-let caml_extra_params = jit_symbol_tag "caml_extra_params"
+let caml_extra_params = Tag.of_symbol "caml_extra_params"
 
 let emit_reg = function
     { loc = Reg r } ->
@@ -519,7 +519,7 @@ let emit_reg = function
 let emit_addressing addr r n =
   match addr with
     Ibased(s, d) ->
-      memtag (jit_symbol_tag s) d
+      memtag (Tag.of_symbol s) d
   | Iindexed d ->
       membase d (emit_reg r.(n))
   | Iindexed2 d ->
@@ -788,10 +788,10 @@ let emit_instr fallthrough i =
         | _ ->
           let lbl = new_label() in
           float_constants := (lbl, s) :: !float_constants;
-          jit_fldl (memtag (jit_label_tag lbl) 0)
+          jit_fldl (memtag (Tag.of_label lbl) 0)
         end
     | Lop(Iconst_symbol s) ->
-        jit_movl (ImmediateTag(jit_symbol_tag s)) (emit_reg i.res.(0))
+        jit_movl (ImmediateTag(Tag.of_symbol s)) (emit_reg i.res.(0))
     | Lop(Icall_ind) ->
         jit_calll (emit_reg i.arg.(0));
         record_frame i.live i.dbg
@@ -810,7 +810,7 @@ let emit_instr fallthrough i =
         end
     | Lop(Iextcall(s, alloc)) ->
         if alloc then begin
-          jit_movl (ImmediateTag(jit_symbol_tag s)) eax;
+          jit_movl (ImmediateTag(Tag.of_symbol s)) eax;
           jit_call_symbol "caml_c_call";
           record_frame i.live i.dbg
         end else begin
@@ -995,7 +995,7 @@ let emit_instr fallthrough i =
     | Lop(Ispecific(Istore_int(n, addr))) ->
         jit_movl (Immediate n) (emit_addressing addr i.arg 0)
     | Lop(Ispecific(Istore_symbol(s, addr))) ->
-        jit_movl (ImmediateTag(jit_symbol_tag s)) (emit_addressing addr i.arg 0)
+        jit_movl (ImmediateTag(Tag.of_symbol s)) (emit_addressing addr i.arg 0)
     | Lop(Ispecific(Ioffset_loc(n, addr))) ->
         jit_addl (Immediate (Nativeint.of_int n)) (emit_addressing addr i.arg 0)
     | Lop(Ispecific(Ipush)) ->
@@ -1020,7 +1020,7 @@ let emit_instr fallthrough i =
         jit_pushl (Immediate n);
         stack_offset := !stack_offset + 4
     | Lop(Ispecific(Ipush_symbol s)) ->
-        jit_pushl (ImmediateTag(jit_symbol_tag s));
+        jit_pushl (ImmediateTag(Tag.of_symbol s));
         stack_offset := !stack_offset + 4
     | Lop(Ispecific(Ipush_load addr)) ->
         jit_pushl (emit_addressing addr i.arg 0);
@@ -1103,7 +1103,7 @@ let emit_instr fallthrough i =
         jit_align 0 4;
         jit_label lbl;
         for i = 0 to Array.length jumptbl - 1 do
-          jit_reloc (R_ABS_32(jit_label_tag jumptbl.(i)));
+          jit_reloc (R_ABS_32(Tag.of_label jumptbl.(i)));
           jit_int32l 0l
         done;
         jit_text()

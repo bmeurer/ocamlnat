@@ -106,7 +106,7 @@ type operand =
   | Immediate of nativeint
   | Shift of operand * shift * operand
   | Memory of (*rn*)operand * (*offset*)operand
-  | MemoryTag of (*tag*)tag * (*addend*)int
+  | MemoryTag of Tag.t * (*addend*)int
 
 let regindex = function
     Register r -> assert (r >= 0 && r < 16); r
@@ -141,7 +141,7 @@ let jit_b_tag ?cc:(cc=AL) ?link:(link=false) tag =
   jit_instr ~cc (if link then 0x0bfffffe else 0x0afffffe)
 
 let jit_b_label ?cc:(cc=AL) ?link:(link=false) lbl =
-  jit_b_tag ~cc ~link (jit_label_tag lbl)
+  jit_b_tag ~cc ~link (Tag.of_label lbl)
 
 let jit_beq_label lbl = jit_b_label ~cc:EQ lbl
 let jit_bne_label lbl = jit_b_label ~cc:NE lbl
@@ -153,7 +153,7 @@ let jit_bl_label lbl = jit_b_label ~link:true lbl
 
 let jit_b_symbol ?cc:(cc=AL) ?link:(link=false) sym =
   let lbl = jit_trampoline sym in
-  jit_b_tag ~cc ~link (jit_label_tag lbl)
+  jit_b_tag ~cc ~link (Tag.of_label lbl)
 
 let jit_bl_symbol   sym = jit_b_symbol ~link:true sym
 let jit_blcc_symbol sym = jit_b_symbol ~cc:CC ~link:true sym
@@ -501,7 +501,7 @@ let emit_constants () =
   Hashtbl.iter
     (fun s lbl ->
       jit_label lbl;
-      jit_reloc (R_ABS_32(jit_symbol_tag s));
+      jit_reloc (R_ABS_32(Tag.of_symbol s));
       jit_int32l 0l)
     symbol_constants;
   Hashtbl.iter
@@ -543,13 +543,13 @@ let emit_instr i =
           2
         end else begin
           let lbl = label_constant float_constants s 2 in
-          jit_ldr (emit_reg i.res.(0)) (MemoryTag(jit_label_tag lbl, 0));
-          jit_ldr (emit_reg i.res.(1)) (MemoryTag(jit_label_tag lbl, 4));
+          jit_ldr (emit_reg i.res.(0)) (MemoryTag(Tag.of_label lbl, 0));
+          jit_ldr (emit_reg i.res.(1)) (MemoryTag(Tag.of_label lbl, 4));
           2
         end
     | Lop(Iconst_symbol s) ->
         let lbl = label_constant symbol_constants s 1 in
-        jit_ldr (emit_reg i.res.(0)) (MemoryTag(jit_label_tag lbl, 0)); 1
+        jit_ldr (emit_reg i.res.(0)) (MemoryTag(Tag.of_label lbl, 0)); 1
     | Lop(Icall_ind) ->
         jit_mov lr pc;
         jit_bx (emit_reg i.arg.(0));
@@ -578,7 +578,7 @@ let emit_instr i =
     | Lop(Iextcall(s, alloc)) ->
         if alloc then begin
           let lbl = label_constant symbol_constants s 1 in
-          jit_ldr r12 (MemoryTag(jit_label_tag lbl, 0));
+          jit_ldr r12 (MemoryTag(Tag.of_label lbl, 0));
           jit_bl_symbol "caml_c_call";
           record_frame i.live i.dbg; 2
         end else begin
@@ -777,7 +777,7 @@ let emit_instr i =
         jit_ldr pc (Memory(pc, Shift(emit_reg i.arg.(0), LSL, Immediate 2n)));
         jit_mov r0 r0;      (* nop *)
         for i = 0 to Array.length jumptbl - 1 do
-          jit_reloc (R_ABS_32(jit_label_tag jumptbl.(i)));
+          jit_reloc (R_ABS_32(Tag.of_label jumptbl.(i)));
           jit_int32l 0l
         done;
         2 + Array.length jumptbl
@@ -861,6 +861,6 @@ let end_assembly() =
   List.iter (fun (sym, lbl) ->
                jit_label lbl;
                jit_ldr pc (Memory(pc, Immediate(-4n)));
-               jit_reloc (R_ABS_32(jit_symbol_tag sym));
+               jit_reloc (R_ABS_32(Tag.of_symbol sym));
                jit_int32l 0l) !trampolines;
   Jitaux.end_assembly()

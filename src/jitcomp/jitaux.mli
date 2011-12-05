@@ -34,26 +34,40 @@ type evaluation_outcome = Result of Obj.t | Exception of exn
 val jit_execsym: string -> evaluation_outcome
 val jit_loadsym: string -> Obj.t
 
-(* Code generation *)
+(* Sections *)
 
 val jit_text: unit -> unit
 val jit_data: unit -> unit
+
+(* Labels and symbols *)
 
 val jit_label: label -> unit
 val jit_symbol: string -> unit
 val jit_global: string -> unit
 
-type tag
-val jit_tag_addr: tag -> Addr.t
-val jit_symbol_tag: string -> tag
-external jit_label_tag: label -> tag = "%identity"
+(* Tags *)
+
+module Tag :
+sig
+  type t
+
+  external is_label: t -> bool = "%obj_is_int"
+  val is_symbol: t -> bool
+
+  external of_label: label -> t = "%identity"
+  val of_symbol: string -> t
+
+  val to_addr: t -> Addr.t
+end
+
+(* Relocations *)
 
 type relocfn = (*S*)Addr.t -> (*P*)Addr.t -> (*A*)int32 -> int32
 type reloc =
-    R_ABS_32 of tag           (* 32bit absolute *)
-  | R_ABS_64 of tag           (* 64bit absolute *)
-  | R_REL_32 of tag           (* 32bit relative *)
-  | R_FUN_32 of tag * relocfn (* 32bit custom *)
+    R_ABS_32 of Tag.t           (* 32bit absolute *)
+  | R_ABS_64 of Tag.t           (* 64bit absolute *)
+  | R_REL_32 of Tag.t           (* 32bit relative *)
+  | R_FUN_32 of Tag.t * relocfn (* 32bit custom *)
 val jit_reloc: reloc -> unit
 
 val jit_int8: int -> unit
