@@ -38,35 +38,47 @@ struct
       (Nativeint.shift_left x (32 - y))
 end
 
-(* Trampolines *)
+(* PLT *)
 
-let trampolines = ref ([] : (string * label) list)
+let plt = ref ([] : (Tag.t * label) list)
 
-let jit_trampoline sym =
-  try
-    List.assoc sym !trampolines
-  with
-    Not_found ->
-      let lbl = new_label() in
-      trampolines := (sym, lbl) :: !trampolines;
-      lbl
+let jit_plt_label tag =
+  try List.assoc tag !plt
+  with Not_found ->
+    let lbl = new_label() in
+    plt := (tag, lbl) :: !plt;
+    lbl
 
 (* Relocations *)
 
 let r_arm_jmp_24 tag =
-  let fn s p i =
+  let decode i =
     let a = (Int32.to_int i) lsl 2 in
-    let a = if (a land 0x2000000) == 0 (* sign extend *)
-            then a land 0x3fffffc
-            else a lor 0x7c000000 in
-    let x = Addr.sub (Addr.add_int s a) p in
+    Addr.of_int (if (a land 0x2000000) == 0 (* sign extend *)
+                 then a land 0x3fffffc
+                 else a lor 0x7c000000)
+  and encode i x =
     assert (x >= -33554432n && x <= 33554431n);
     Int32.logor
       (Int32.logand i 0xff000000l)
       (Addr.to_int32 (Addr.logand
                        (Addr.shift_right x 2)
                        0xffffffn)) in
-  R_FUN_32(tag, fn)
+  if Tag.is_label tag then begin
+    let fn s p i =
+      encode i (Addr.add s (Addr.sub (decode i) p)) in
+    R_FUN_32(tag, fn)
+  end else begin
+    let lbl = jit_plt_label tag in
+    let fn s p i =
+      let a = Addr.sub (decode i) p in
+      let x = Addr.add s a in
+      let x = if (x >= -33554432n && x <= 33554431n)
+              then x
+              else Addr.add (Tag.to_addr (Tag.of_label lbl)) a in
+      encode i x in
+    R_FUN_32(tag, fn)
+  end
 
 let r_arm_ldr_12 tag =
   let fn s p i =
@@ -152,8 +164,7 @@ let jit_bgt_label lbl = jit_b_label ~cc:GT lbl
 let jit_bl_label lbl = jit_b_label ~link:true lbl
 
 let jit_b_symbol ?cc:(cc=AL) ?link:(link=false) sym =
-  let lbl = jit_trampoline sym in
-  jit_b_tag ~cc ~link (Tag.of_label lbl)
+  jit_b_tag ~cc ~link (Tag.of_symbol sym)
 
 let jit_bl_symbol   sym = jit_b_symbol ~link:true sym
 let jit_blcc_symbol sym = jit_b_symbol ~cc:CC ~link:true sym
@@ -851,16 +862,16 @@ let data = Jitaux.data
 (* Beginning / end of an assembly file *)
 
 let begin_assembly() =
-  trampolines := [];
+  plt := [];
   Jitaux.begin_assembly()
 
 let end_assembly() =
-  (* Emit the trampolines *)
+  (* Emit the PLT stubs *)
   jit_text();
   jit_align 0 4;
-  List.iter (fun (sym, lbl) ->
+  List.iter (fun (tag, lbl) ->
                jit_label lbl;
                jit_ldr pc (Memory(pc, Immediate(-4n)));
-               jit_reloc (R_ABS_32(Tag.of_symbol sym));
-               jit_int32l 0l) !trampolines;
+               jit_reloc (R_ABS_32 tag);
+               jit_int32l 0l) !plt;
   Jitaux.end_assembly()
