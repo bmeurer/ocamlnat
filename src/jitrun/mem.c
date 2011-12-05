@@ -172,7 +172,7 @@ value camlnat_mem_prepare(value addr, value data, value size)
 #if (defined(__clang__) || defined(__GNUC__)) \
     && (defined(__amd64__) || defined(__i386__))
     assert(chunk_alignment() >= 4 * 16);
-    if (((uintptr_t)src & 0x0f) == 0) {
+    if (((uintnat)src & 0x0f) == 0) {
       /* src has 16-byte alignment */
       asm volatile(".align  4\n"
                    "1:\t"
@@ -190,7 +190,11 @@ value camlnat_mem_prepare(value addr, value data, value size)
                    "jnz     1b\n\t"
                    : "=r"(dst), "=r"(src), "=r"(len)
                    : "0"(dst), "1"(src), "2"(len)
-                   : "flags", "memory", "%xmm0", "%xmm1", "%xmm2", "%xmm3");
+                   : "flags"
+#if defined(__amd64__)
+                   , "%xmm0", "%xmm1", "%xmm2", "%xmm3"
+#endif
+                   , "memory");
     }
     else {
       /* src is not 16-byte aligned */
@@ -210,7 +214,11 @@ value camlnat_mem_prepare(value addr, value data, value size)
                    "jnz     1b\n\t"
                    : "=r"(dst), "=r"(src), "=r"(len)
                    : "0"(dst), "1"(src), "2"(len)
-                   : "flags", "memory", "%xmm0", "%xmm1", "%xmm2", "%xmm3");
+                   : "flags"
+#if defined(__amd64__)
+                   , "%xmm0", "%xmm1", "%xmm2", "%xmm3"
+#endif
+                   , "memory");
     }
 #else
     memcpy(dst, src, len);
